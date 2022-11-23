@@ -7,8 +7,9 @@ package odbc
 import (
 	"database/sql/driver"
 	"io"
-
-	"github.com/alexbrainman/odbc/api"
+	"fmt"
+	"github.com/zerobit-tech/godbc/api"
+	"unsafe"
 )
 
 type Rows struct {
@@ -21,6 +22,22 @@ func (r *Rows) Columns() []string {
 		names[i] = r.os.Cols[i].Name()
 	}
 	return names
+}
+
+func (r *Rows) ColumnTypeDatabaseTypeName(index int) string {
+	//TODO(AKHIL):This functions retuns the dbtype(VARCHAR,DECIMAL etc..) of column.
+	//namebuf can be of uint8 or byte
+	var namelen api.SQLSMALLINT
+	namebuf := make([]byte, api.MAX_FIELD_SIZE)
+	buf := api.SQLLEN(32)
+	ret := api.SQLColAttribute(r.os.h, api.SQLUSMALLINT(index+1), api.SQL_DESC_TYPE_NAME, api.SQLPOINTER(unsafe.Pointer(&namebuf[0])), (api.MAX_FIELD_SIZE), (*api.SQLSMALLINT)(&namelen), &buf)
+
+	if IsError(ret) {
+		fmt.Println(ret)
+		return ""
+	}
+	dbtype := string(namebuf[:namelen])
+	return dbtype
 }
 
 func (r *Rows) Next(dest []driver.Value) error {

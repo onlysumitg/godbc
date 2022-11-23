@@ -3,13 +3,12 @@
 // license that can be found in the LICENSE file.
 
 // Package odbc implements database/sql driver to access data via odbc interface.
-//
 package odbc
 
 import (
 	"database/sql"
 
-	"github.com/alexbrainman/odbc/api"
+	"github.com/zerobit-tech/godbc/api"
 )
 
 var drv Driver

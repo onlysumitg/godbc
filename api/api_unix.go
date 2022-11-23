@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build (darwin || linux || freebsd) && cgo
 // +build darwin linux freebsd
 // +build cgo
 
@@ -27,6 +28,22 @@ SQLRETURN sqlSetConnectUIntPtrAttr(SQLHDBC connectionHandle, SQLINTEGER attribut
 import "C"
 
 const (
+	MAX_FIELD_SIZE = 1024
+
+	SQL_DESC_PRECISION    = C.SQL_DESC_PRECISION
+	SQL_DESC_SCALE        = C.SQL_DESC_SCALE
+	SQL_DESC_LENGTH       = C.SQL_DESC_LENGTH
+	SQL_DESC_CONCISE_TYPE = C.SQL_DESC_CONCISE_TYPE
+	SQL_DESC_TYPE_NAME    = C.SQL_DESC_TYPE_NAME
+	SQL_COLUMN_TYPE       = C.SQL_COLUMN_TYPE
+	SQL_COLUMN_TYPE_NAME  = C.SQL_COLUMN_TYPE_NAME
+
+	SQL_DESC_NULLABLE      = C.SQL_DESC_NULLABLE
+	SQL_NULLABLE           = C.SQL_NULLABLE
+	SQL_NO_NULLS           = C.SQL_NO_NULLS
+	SQL_DECFLOAT           = C.SQL_CHAR
+	SQL_ATTR_PARAMSET_SIZE = C.SQL_ATTR_PARAMSET_SIZE
+
 	SQL_OV_ODBC3 = uintptr(C.SQL_OV_ODBC3)
 
 	SQL_ATTR_ODBC_VERSION = C.SQL_ATTR_ODBC_VERSION
