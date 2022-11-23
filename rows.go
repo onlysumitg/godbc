@@ -6,10 +6,12 @@ package odbc
 
 import (
 	"database/sql/driver"
-	"io"
 	"fmt"
-	"github.com/zerobit-tech/godbc/api"
+	"io"
+	"reflect"
 	"unsafe"
+
+	"github.com/zerobit-tech/godbc/api"
 )
 
 type Rows struct {
@@ -22,6 +24,83 @@ func (r *Rows) Columns() []string {
 		names[i] = r.os.Cols[i].Name()
 	}
 	return names
+}
+
+func (r *Rows) ColumnTypePrecisionScale(index int) (precision, scale int64, ok bool) {
+	//TODO(Akhil):This functions retuns the precision and scale of column.
+	ok = false
+	var namelen api.SQLSMALLINT
+	namebuf := make([]byte, api.MAX_FIELD_SIZE)
+	buf := api.SQLLEN(32)
+	ret := api.SQLColAttribute(r.os.h, api.SQLUSMALLINT(index+1), api.SQL_DESC_TYPE_NAME, api.SQLPOINTER(unsafe.Pointer(&namebuf[0])), (api.MAX_FIELD_SIZE), (*api.SQLSMALLINT)(&namelen), &buf)
+
+	if IsError(ret) {
+		fmt.Println(ret)
+		return 0, 0, false
+	}
+
+	dbtype := string(namebuf[:namelen])
+	buf2 := api.SQLLEN(32)
+	ret = api.SQLColAttribute(r.os.h, api.SQLUSMALLINT(index+1), api.SQL_DESC_PRECISION, api.SQLPOINTER(unsafe.Pointer(nil)), 0, (*api.SQLSMALLINT)(nil), &buf2)
+	if IsError(ret) {
+		fmt.Println(ret)
+		return 0, 0, false
+	}
+
+	precision = int64(buf2)
+
+	buf3 := api.SQLLEN(32)
+
+	ret = api.SQLColAttribute(r.os.h, api.SQLUSMALLINT(index+1), api.SQL_DESC_SCALE, api.SQLPOINTER(unsafe.Pointer(nil)), 0, (*api.SQLSMALLINT)(nil), &buf3)
+
+	scale = int64(buf3)
+
+	if IsError(ret) {
+		fmt.Println(ret)
+		return 0, 0, false
+	}
+	if dbtype == "DECIMAL" {
+		ok = true
+	} else if dbtype == "NUMERIC" {
+		ok = true
+	} else if dbtype == "TIMESTAMP" {
+		ok = true
+	}
+	return precision, scale, ok
+}
+
+func (r *Rows) ColumnTypeLength(index int) (length int64, ok bool) {
+	//ToDo(Akhil):This functions retuns the length of column.
+	buf := api.SQLLEN(32)
+	ret := api.SQLColAttribute(r.os.h, api.SQLUSMALLINT(index+1), api.SQL_DESC_LENGTH, api.SQLPOINTER(unsafe.Pointer(nil)), 0, (*api.SQLSMALLINT)(nil), &buf)
+	length = int64(buf)
+	if IsError(ret) {
+		fmt.Println(ret)
+		return 0, false
+	}
+	return length, true
+}
+
+func (r *Rows) ColumnTypeScanType(index int) reflect.Type {
+	//TODO(AKHIL):This function will return the scantype that can be used to scan
+	//the data to the golang variable.
+	a := r.os.Cols[index].TypeScan()
+	return (a)
+}
+
+func (r *Rows) ColumnTypeNullable(index int) (nullable, ok bool) {
+	//TODO(Akhil):This functions retuns whether the column is nullable or not
+	var null int64
+	buf := api.SQLLEN(32)
+	ret := api.SQLColAttribute(r.os.h, api.SQLUSMALLINT(index+1), api.SQL_DESC_NULLABLE, api.SQLPOINTER(unsafe.Pointer(nil)), 0, (*api.SQLSMALLINT)(nil), &buf)
+	if IsError(ret) {
+		fmt.Println(ret)
+		return false, false
+	}
+	if null == api.SQL_NULLABLE {
+		return true, true
+	}
+	return false, true
 }
 
 func (r *Rows) ColumnTypeDatabaseTypeName(index int) string {

@@ -8,6 +8,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"reflect"
 	"time"
 	"unsafe"
 
@@ -35,6 +36,7 @@ func (l *BufferLen) Bind(h api.SQLHSTMT, idx int, ctype api.SQLSMALLINT, buf []b
 // Column provides access to row columns.
 type Column interface {
 	Name() string
+	TypeScan() reflect.Type
 	Bind(h api.SQLHSTMT, idx int) (bool, error)
 	Value(h api.SQLHSTMT, idx int) (driver.Value, error)
 }
@@ -117,6 +119,30 @@ type BaseColumn struct {
 	CType   api.SQLSMALLINT
 }
 
+func (c *BaseColumn) TypeScan() reflect.Type {
+	switch c.CType {
+	case api.SQL_C_BIT:
+		return reflect.TypeOf(false)
+	case api.SQL_C_LONG:
+		return reflect.TypeOf(int32(0))
+	case api.SQL_C_SBIGINT:
+		return reflect.TypeOf(int64(0))
+	case api.SQL_C_DOUBLE:
+		return reflect.TypeOf(float64(0.0))
+	case api.SQL_C_CHAR, api.SQL_C_WCHAR:
+		if c.CType == api.SQL_DECFLOAT {
+			return reflect.TypeOf(float64(0.0))
+		}
+		return reflect.TypeOf(string(""))
+	case api.SQL_C_TYPE_DATE, api.SQL_C_TYPE_TIME, api.SQL_C_TYPE_TIMESTAMP:
+		return reflect.TypeOf(time.Time{})
+	case api.SQL_C_BINARY:
+		return reflect.TypeOf([]byte(nil))
+	default:
+		return reflect.TypeOf(new(interface{}))
+	}
+
+}
 func (c *BaseColumn) Name() string {
 	return c.name
 }
