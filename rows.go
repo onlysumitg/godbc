@@ -119,6 +119,36 @@ func (r *Rows) ColumnTypeDatabaseTypeName(index int) string {
 	return dbtype
 }
 
+func (r *Rows) ColumnTypeLabel(index int) string {
+
+	var namelen api.SQLSMALLINT
+	namebuf := make([]byte, api.MAX_FIELD_SIZE)
+	buf := api.SQLLEN(32)
+	ret := api.SQLColAttribute(r.os.h, api.SQLUSMALLINT(index+1), api.SQL_DESC_LABEL, api.SQLPOINTER(unsafe.Pointer(&namebuf[0])), (api.MAX_FIELD_SIZE), (*api.SQLSMALLINT)(&namelen), &buf)
+
+	if IsError(ret) {
+		fmt.Println(ret)
+		return ""
+	}
+	dbtype := string(namebuf[:namelen])
+	return dbtype
+}
+
+func (r *Rows) ColumnTypeTable(index int) string {
+
+	var namelen api.SQLSMALLINT
+	namebuf := make([]byte, api.MAX_FIELD_SIZE)
+	buf := api.SQLLEN(32)
+	ret := api.SQLColAttribute(r.os.h, api.SQLUSMALLINT(index+1), api.SQL_DESC_TABLE_NAME, api.SQLPOINTER(unsafe.Pointer(&namebuf[0])), (api.MAX_FIELD_SIZE), (*api.SQLSMALLINT)(&namelen), &buf)
+
+	if IsError(ret) {
+		fmt.Println(ret)
+		return ""
+	}
+	dbtype := string(namebuf[:namelen])
+	return dbtype
+}
+
 func (r *Rows) Next(dest []driver.Value) error {
 	ret := api.SQLFetch(r.os.h)
 	if ret == api.SQL_NO_DATA {

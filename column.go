@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 	"unsafe"
 
@@ -50,10 +51,37 @@ func describeColumn(h api.SQLHSTMT, idx int, namebuf []uint16) (namelen int, sql
 	return int(l), sqltype, size, ret
 }
 
+func columnLable(h api.SQLHSTMT, idx int) string {
+	var namelen api.SQLSMALLINT
+	namebuf := make([]byte, api.MAX_FIELD_SIZE)
+	buf := api.SQLLEN(32)
+	ret := api.SQLColAttribute(h, api.SQLUSMALLINT(idx+1), api.SQL_DESC_LABEL, api.SQLPOINTER(unsafe.Pointer(&namebuf[0])), (api.MAX_FIELD_SIZE), (*api.SQLSMALLINT)(&namelen), &buf)
+
+	if IsError(ret) {
+		fmt.Println(ret)
+		return ""
+	}
+	dbtype := string(namebuf[:namelen])
+	return dbtype
+}
+func columnTable(h api.SQLHSTMT, idx int) string {
+	var namelen api.SQLSMALLINT
+	namebuf := make([]byte, api.MAX_FIELD_SIZE)
+	buf := api.SQLLEN(32)
+	ret := api.SQLColAttribute(h, api.SQLUSMALLINT(idx+1), api.SQL_DESC_TABLE_NAME, api.SQLPOINTER(unsafe.Pointer(&namebuf[0])), (api.MAX_FIELD_SIZE), (*api.SQLSMALLINT)(&namelen), &buf)
+
+	if IsError(ret) {
+		fmt.Println(ret)
+		return ""
+	}
+	dbtype := string(namebuf[:namelen])
+	return dbtype
+}
+
 // TODO(brainman): did not check for MS SQL timestamp
 
 func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
-	namebuf := make([]uint16, 150)
+	namebuf := make([]uint16, 256)
 	namelen, sqltype, size, ret := describeColumn(h, idx, namebuf)
 	if ret == api.SQL_SUCCESS_WITH_INFO && namelen > len(namebuf) {
 		// try again with bigger buffer
@@ -67,8 +95,21 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 		// still complaining about buffer size
 		return nil, errors.New("Failed to allocate column name buffer")
 	}
+
+	// sumit --> assign column name
+	originalName := api.UTF16ToString(namebuf[:namelen])
+	columnLable := columnLable(h, idx)
+	columnTable := columnTable(h, idx)
+
+	if columnTable != "" {
+		originalName = strings.Trim(columnTable, " ") + "." + strings.Trim(originalName, " ")
+	}
+
+	if columnLable != "" {
+		originalName = strings.Trim(originalName, " ") + "\n" + strings.Trim(columnLable, " ")
+	}
 	b := &BaseColumn{
-		name:    api.UTF16ToString(namebuf[:namelen]),
+		name:    originalName,
 		SQLType: sqltype,
 	}
 	switch sqltype {
