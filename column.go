@@ -68,7 +68,7 @@ func columnTable(h api.SQLHSTMT, idx int) string {
 	var namelen api.SQLSMALLINT
 	namebuf := make([]byte, api.MAX_FIELD_SIZE)
 	buf := api.SQLLEN(32)
-	ret := api.SQLColAttribute(h, api.SQLUSMALLINT(idx+1), api.SQL_DESC_TABLE_NAME, api.SQLPOINTER(unsafe.Pointer(&namebuf[0])), (api.MAX_FIELD_SIZE), (*api.SQLSMALLINT)(&namelen), &buf)
+	ret := api.SQLColAttribute(h, api.SQLUSMALLINT(idx+1), api.SQL_DESC_BASE_TABLE_NAME, api.SQLPOINTER(unsafe.Pointer(&namebuf[0])), (api.MAX_FIELD_SIZE), (*api.SQLSMALLINT)(&namelen), &buf)
 
 	if IsError(ret) {
 		fmt.Println(ret)
@@ -97,19 +97,21 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 	}
 
 	// sumit --> assign column name
-	originalName := api.UTF16ToString(namebuf[:namelen])
-	columnLable := columnLable(h, idx)
-	columnTable := columnTable(h, idx)
+	originalName := strings.Trim(api.UTF16ToString(namebuf[:namelen]), " ")
+	columnLable := strings.Trim(columnLable(h, idx), " ")
+	columnTable := strings.Trim(columnTable(h, idx), " ")
+
+	nameToUse := originalName
 
 	if columnTable != "" {
-		originalName = strings.Trim(columnTable, " ") + "." + strings.Trim(originalName, " ")
+		nameToUse = columnTable + "." + originalName
 	}
 
-	if columnLable != "" {
-		originalName = strings.Trim(originalName, " ") + "\n" + strings.Trim(columnLable, " ")
+	if columnLable != "" && columnLable != originalName {
+		nameToUse = nameToUse + "[" + columnLable + "]"
 	}
 	b := &BaseColumn{
-		name:    originalName,
+		name:    nameToUse,
 		SQLType: sqltype,
 	}
 	switch sqltype {
