@@ -67,7 +67,7 @@ type (
 //sys   SQLSetPos(statementHandle SQLHSTMT,rowNumber SQLSETPOSIROW,operation SQLUSMALLINT,lockType SQLUSMALLINT)(ret SQLRETURN) = odbc32.SQLSetPos
 //sys   SQLSetStmtAttr(statementHandle SQLHSTMT,attribute SQLINTEGER,valuePtr SQLPOINTER,stringLength SQLINTEGER)(ret SQLRETURN) = odbc32.SQLSetStmtAttr
 //sys   SQLColAttribute(statementHandle SQLHSTMT, columnNumber  SQLUSMALLINT, fieldIdentifier SQLUSMALLINT, characterAttributePtr SQLPOINTER, bufferLength SQLSMALLINT, stringLengthPtr *SQLSMALLINT, numericAttributePtr *SQLLEN) (ret SQLRETURN)  = odbc32.SQLColAttribute
-//sys	SQLFetchScroll(statementHandle SQLHSTMT, FetchOrientation  SQLUSMALLINT,FetchOffset SQLLEN) (ret SQLRETURN) = odbc32.SQLFetchScroll
+//sys	SQLFetchScroll(statementHandle SQLHSTMT, FetchOrientation  SQLSMALLINT,FetchOffset SQLLEN) (ret SQLRETURN) = odbc32.SQLFetchScroll
 
 // UTF16ToString returns the UTF-8 encoding of the UTF-16 sequence s,
 // with a terminating NUL removed.

@@ -141,7 +141,7 @@ func SQLColAttribute(statementHandle SQLHSTMT, columnNumber SQLUSMALLINT, fieldI
 	return SQLRETURN(r)
 }
 
-func SQLFetchScroll(statementHandle SQLHSTMT, FetchOrientation SQLUSMALLINT, FetchOffset SQLLEN) (ret SQLRETURN) {
-	r := C.SQLFetchScroll(C.SQLHSTMT(statementHandle), C.SQLUSMALLINT(FetchOrientation), C.SQLLEN(FetchOffset))
+func SQLFetchScroll(statementHandle SQLHSTMT, FetchOrientation SQLSMALLINT, FetchOffset SQLLEN) (ret SQLRETURN) {
+	r := C.SQLFetchScroll(C.SQLHSTMT(statementHandle), C.SQLSMALLINT(FetchOrientation), C.SQLLEN(FetchOffset))
 	return SQLRETURN(r)
 }
