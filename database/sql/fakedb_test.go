@@ -1121,6 +1121,10 @@ func (rc *rowsCursor) JumpToRow(rowNumber int) error {
 	return nil
 }
 
+func (rc *rowsCursor) JumpToRow2(rowNumber int) error {
+	return nil
+}
+
 func (rc *rowsCursor) Next(dest []driver.Value) error {
 	if rowsCursorNextHook != nil {
 		return rowsCursorNextHook(dest)

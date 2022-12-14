@@ -441,9 +441,10 @@ type Rows interface {
 	// a buffer held in dest.
 	Next(dest []Value) error
 
-
 	// sumit
 	JumpToRow(rowNumber int) error
+
+	JumpToRow2(rowNumber int) error
 }
 
 // RowsNextResultSet extends the Rows interface by providing a way to signal

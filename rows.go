@@ -177,6 +177,15 @@ func (r *Rows) JumpToRow(rowNumber int) error {
 	return nil
 }
 
+func (r *Rows) JumpToRow2(rowNumber int) error {
+	rowsToMove := api.SQLLEN(rowNumber)
+	ret := api.SQLFetchScroll(r.os.h, api.SQL_FETCH_ABSOLUTE, rowsToMove)
+	if IsError(ret) {
+		return NewError("SQLSetPos", r.os.h)
+	}
+	return nil
+}
+
 func (r *Rows) Close() error {
 	return r.os.closeByRows()
 }
