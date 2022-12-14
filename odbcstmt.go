@@ -96,7 +96,7 @@ func setScrollableCursor(h api.SQLHSTMT) error {
 
 func setCursorType(h api.SQLHSTMT) error {
 	cSize := api.SQLINTEGER(api.SQL_CURSOR_STATIC)
-	fmt.Printf("SQL_ATTR_CURSOR_TYPE cSize: %T    %d\n ", cSize, cSize)
+	fmt.Printf("SQL_ATTR_CURSOR_TYPE 09 cSize: %T    %d\n ", cSize, cSize)
 
 	ret := api.SQLSetStmtAttr(h, api.SQL_ATTR_CURSOR_TYPE, api.SQLPOINTER(&cSize), api.SQL_IS_INTEGER)
 	if IsError(ret) {
