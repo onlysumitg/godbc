@@ -8,6 +8,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 	"unsafe"
@@ -49,10 +50,10 @@ func (c *Conn) PrepareODBCStmt(query string) (*ODBCStmt, error) {
 	// if err != nil {
 	// 	log.Println("odbcstmt.do (c *Conn) PrepareODBCStmt setRowsetSize", err.Error())
 	// }
-	// err = setCursorType(h)
-	// if err != nil {
-	// 	log.Println("odbcstmt.do (c *Conn) PrepareODBCStmt setCursorType", err.Error())
-	// }
+	err = setCursorType(h)
+	if err != nil {
+		log.Println("odbcstmt.do (c *Conn) PrepareODBCStmt setCursorType", err.Error())
+	}
 
 	ret = api.SQLPrepare(h, (*api.SQLWCHAR)(unsafe.Pointer(&b[0])), api.SQL_NTS)
 	if IsError(ret) {
@@ -93,16 +94,16 @@ func (c *Conn) PrepareODBCStmt(query string) (*ODBCStmt, error) {
 // 	return nil
 // }
 
-// func setCursorType(h api.SQLHSTMT) error {
-// 	cSize := api.SQLINTEGER(api.SQL_CURSOR_STATIC)
-// 	fmt.Printf("SQL_ATTR_CURSOR_TYPE 09 cSize: %T    %d\n ", cSize, cSize)
+func setCursorType(h api.SQLHSTMT) error {
+	cSize := api.SQLINTEGER(api.SQL_CURSOR_STATIC)
+	fmt.Printf("SQL_ATTR_CURSOR_TYPE 09 cSize: %T    %d\n ", cSize, cSize)
 
-// 	ret := api.SQLSetStmtAttr(h, api.SQL_ATTR_CURSOR_TYPE, api.SQLPOINTER(&cSize), api.SQL_IS_INTEGER)
-// 	if IsError(ret) {
-// 		return NewError("SQL_ATTR_CURSOR_TYPE", h)
-// 	}
-// 	return nil
-// }
+	ret := api.SQLSetStmtAttr(h, api.SQL_ATTR_CURSOR_TYPE, api.SQLPOINTER(3.0), api.SQL_IS_INTEGER)
+	if IsError(ret) {
+		return NewError("SQL_ATTR_CURSOR_TYPE", h)
+	}
+	return nil
+}
 
 func (s *ODBCStmt) closeByStmt() error {
 	s.mu.Lock()
