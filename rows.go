@@ -168,7 +168,7 @@ func (r *Rows) Next(dest []driver.Value) error {
 	return nil
 }
 
-func (r *Rows) MoveTo(rowNumber int) error {
+func (r *Rows) JumpToRow(rowNumber int) error {
 	row := api.SQLSETPOSIROW(rowNumber)
 	ret := api.SQLSetPos(r.os.h, row, api.SQL_POSITION, api.SQL_LOCK_NO_CHANGE)
 	if IsError(ret) {

@@ -2963,6 +2963,10 @@ func (rs *Rows) Next() bool {
 	return ok
 }
 
+func (rs *Rows) JumpToRow(rowNumber int) error {
+	return rs.rowsi.JumpToRow(rowNumber)
+}
+
 func (rs *Rows) nextLocked() (doClose, ok bool) {
 	if rs.closed {
 		return false, false
