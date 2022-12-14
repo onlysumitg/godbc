@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package odbc implements database/sql driver to access data via odbc interface.
-package odbc
+// package godbc implements database/sql driver to access data via odbc interface.
+package godbc
 
 import (
 	"github.com/zerobit-tech/godbc/database/sql"
