@@ -8,7 +8,6 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
-	"log"
 	"sync"
 	"time"
 	"unsafe"
@@ -42,18 +41,18 @@ func (c *Conn) PrepareODBCStmt(query string) (*ODBCStmt, error) {
 
 	b := api.StringToUTF16(query)
 
-	err = setScrollableCursor(h)
-	if err != nil {
-		log.Println("odbcstmt.do (c *Conn) PrepareODBCStmt setCursorType", err.Error())
-	}
-	err = setRowsetSize(h, 25)
-	if err != nil {
-		log.Println("odbcstmt.do (c *Conn) PrepareODBCStmt setRowsetSize", err.Error())
-	}
-	err = setCursorType(h)
-	if err != nil {
-		log.Println("odbcstmt.do (c *Conn) PrepareODBCStmt setCursorType", err.Error())
-	}
+	// err = setScrollableCursor(h)
+	// if err != nil {
+	// 	log.Println("odbcstmt.do (c *Conn) PrepareODBCStmt setCursorType", err.Error())
+	// }
+	// err = setRowsetSize(h, 25)
+	// if err != nil {
+	// 	log.Println("odbcstmt.do (c *Conn) PrepareODBCStmt setRowsetSize", err.Error())
+	// }
+	// err = setCursorType(h)
+	// if err != nil {
+	// 	log.Println("odbcstmt.do (c *Conn) PrepareODBCStmt setCursorType", err.Error())
+	// }
 
 	ret = api.SQLPrepare(h, (*api.SQLWCHAR)(unsafe.Pointer(&b[0])), api.SQL_NTS)
 	if IsError(ret) {
@@ -75,35 +74,35 @@ func (c *Conn) PrepareODBCStmt(query string) (*ODBCStmt, error) {
 	return odbcStatement, nil
 }
 
-func setRowsetSize(h api.SQLHSTMT, size int) error {
-	cSize := api.SQLUINTEGER(size)
-	ret := api.SQLSetStmtAttr(h, api.SQL_ATTR_ROW_ARRAY_SIZE, api.SQLPOINTER(unsafe.Pointer(&cSize)), 0)
-	if IsError(ret) {
-		return NewError("SQL_ATTR_ROW_ARRAY_SIZE", h)
-	}
-	return nil
-}
+// func setRowsetSize(h api.SQLHSTMT, size int) error {
+// 	cSize := api.SQLUINTEGER(size)
+// 	ret := api.SQLSetStmtAttr(h, api.SQL_ATTR_ROW_ARRAY_SIZE, api.SQLPOINTER(unsafe.Pointer(&cSize)), 0)
+// 	if IsError(ret) {
+// 		return NewError("SQL_ATTR_ROW_ARRAY_SIZE", h)
+// 	}
+// 	return nil
+// }
 
-func setScrollableCursor(h api.SQLHSTMT) error {
-	cSize := api.SQLINTEGER(api.SQL_SCROLLABLE)
-	fmt.Printf("SQL_ATTR_CURSOR_SCROLLABLE cSize: %T    %d\n ", cSize, cSize)
-	ret := api.SQLSetStmtAttr(h, api.SQL_ATTR_CURSOR_SCROLLABLE, api.SQLPOINTER(&cSize), api.SQL_IS_INTEGER)
-	if IsError(ret) {
-		return NewError("SQL_ATTR_CURSOR_SCROLLABLE", h)
-	}
-	return nil
-}
+// func setScrollableCursor(h api.SQLHSTMT) error {
+// 	cSize := api.SQLINTEGER(api.SQL_SCROLLABLE)
+// 	fmt.Printf("SQL_ATTR_CURSOR_SCROLLABLE cSize: %T    %d\n ", cSize, cSize)
+// 	ret := api.SQLSetStmtAttr(h, api.SQL_ATTR_CURSOR_SCROLLABLE, api.SQLPOINTER(&cSize), api.SQL_IS_INTEGER)
+// 	if IsError(ret) {
+// 		return NewError("SQL_ATTR_CURSOR_SCROLLABLE", h)
+// 	}
+// 	return nil
+// }
 
-func setCursorType(h api.SQLHSTMT) error {
-	cSize := api.SQLINTEGER(api.SQL_CURSOR_STATIC)
-	fmt.Printf("SQL_ATTR_CURSOR_TYPE 09 cSize: %T    %d\n ", cSize, cSize)
+// func setCursorType(h api.SQLHSTMT) error {
+// 	cSize := api.SQLINTEGER(api.SQL_CURSOR_STATIC)
+// 	fmt.Printf("SQL_ATTR_CURSOR_TYPE 09 cSize: %T    %d\n ", cSize, cSize)
 
-	ret := api.SQLSetStmtAttr(h, api.SQL_ATTR_CURSOR_TYPE, api.SQLPOINTER(&cSize), api.SQL_IS_INTEGER)
-	if IsError(ret) {
-		return NewError("SQL_ATTR_CURSOR_TYPE", h)
-	}
-	return nil
-}
+// 	ret := api.SQLSetStmtAttr(h, api.SQL_ATTR_CURSOR_TYPE, api.SQLPOINTER(&cSize), api.SQL_IS_INTEGER)
+// 	if IsError(ret) {
+// 		return NewError("SQL_ATTR_CURSOR_TYPE", h)
+// 	}
+// 	return nil
+// }
 
 func (s *ODBCStmt) closeByStmt() error {
 	s.mu.Lock()

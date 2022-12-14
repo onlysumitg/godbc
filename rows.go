@@ -168,10 +168,10 @@ func (r *Rows) Next(dest []driver.Value) error {
 }
 
 func (r *Rows) MoveTo(rowNumber int) error {
-	buf := api.SQLLEN(rowNumber)
-	ret := api.SQLFetchScroll(r.os.h, api.SQL_FETCH_ABSOLUTE, buf)
+	row := api.SQLSETPOSIROW(rowNumber)
+	ret := api.SQLSetPos(r.os.h, row, api.SQL_POSITION, api.SQL_LOCK_NO_CHANGE)
 	if IsError(ret) {
-		return NewError("SQLFetchScroll", r.os.h)
+		return NewError("SQLSetPos", r.os.h)
 	}
 	return nil
 }
