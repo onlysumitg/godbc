@@ -51,10 +51,10 @@ func (c *Conn) PrepareODBCStmt(query string) (*ODBCStmt, error) {
 	// if err != nil {
 	// 	log.Println("odbcstmt.do (c *Conn) PrepareODBCStmt setRowsetSize", err.Error())
 	// }
-	err = setCursorType(h)
-	if err != nil {
-		log.Println("odbcstmt.do (c *Conn) PrepareODBCStmt setCursorType", err.Error())
-	}
+	// err = setCursorType(h)
+	// if err != nil {
+	// 	log.Println("odbcstmt.do (c *Conn) PrepareODBCStmt setCursorType", err.Error())
+	// }
 
 	ret = api.SQLPrepare(h, (*api.SQLWCHAR)(unsafe.Pointer(&b[0])), api.SQL_NTS)
 	if IsError(ret) {
