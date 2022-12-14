@@ -7,7 +7,6 @@ package godbc
 import (
 	"errors"
 	"fmt"
-	"log"
 	"sync"
 	"time"
 	"unsafe"
