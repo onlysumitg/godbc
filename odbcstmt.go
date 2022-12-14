@@ -43,10 +43,10 @@ func (c *Conn) PrepareODBCStmt(query string) (*ODBCStmt, error) {
 
 	b := api.StringToUTF16(query)
 
-	err = setScrollableCursor(h)
-	if err != nil {
-		log.Println("odbcstmt.do (c *Conn) PrepareODBCStmt setCursorType", err.Error())
-	}
+	// err = setScrollableCursor(h)
+	// if err != nil {
+	// 	log.Println("odbcstmt.do (c *Conn) PrepareODBCStmt setCursorType", err.Error())
+	// }
 	// err = setRowsetSize(h, 25)
 	// if err != nil {
 	// 	log.Println("odbcstmt.do (c *Conn) PrepareODBCStmt setRowsetSize", err.Error())
