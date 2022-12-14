@@ -5,6 +5,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build (darwin || linux || freebsd) && cgo
 // +build darwin linux freebsd
 // +build cgo
 
@@ -42,12 +43,6 @@ func SQLCloseCursor(statementHandle SQLHSTMT) (ret SQLRETURN) {
 
 func SQLDescribeCol(statementHandle SQLHSTMT, columnNumber SQLUSMALLINT, columnName *SQLWCHAR, bufferLength SQLSMALLINT, nameLengthPtr *SQLSMALLINT, dataTypePtr *SQLSMALLINT, columnSizePtr *SQLULEN, decimalDigitsPtr *SQLSMALLINT, nullablePtr *SQLSMALLINT) (ret SQLRETURN) {
 	r := C.SQLDescribeColW(C.SQLHSTMT(statementHandle), C.SQLUSMALLINT(columnNumber), (*C.SQLWCHAR)(unsafe.Pointer(columnName)), C.SQLSMALLINT(bufferLength), (*C.SQLSMALLINT)(nameLengthPtr), (*C.SQLSMALLINT)(dataTypePtr), (*C.SQLULEN)(columnSizePtr), (*C.SQLSMALLINT)(decimalDigitsPtr), (*C.SQLSMALLINT)(nullablePtr))
-	return SQLRETURN(r)
-}
-
-
-func SQLColAttribute(statementHandle SQLHSTMT, ColumnNumber SQLUSMALLINT, FieldIdentifier SQLUSMALLINT, CharacterAttributePtr SQLPOINTER, BufferLength SQLSMALLINT, StringLengthPtr *SQLSMALLINT, NumericAttributePtr *SQLLEN) (ret SQLRETURN) {
-	r := C.SQLColAttribute(C.SQLHSTMT(statementHandle), C.SQLUSMALLINT(ColumnNumber), C.SQLUSMALLINT(FieldIdentifier), C.SQLPOINTER(CharacterAttributePtr), C.SQLSMALLINT(BufferLength), (*C.SQLSMALLINT)(unsafe.Pointer(StringLengthPtr)), (*C.SQLLEN)(NumericAttributePtr))
 	return SQLRETURN(r)
 }
 
@@ -131,3 +126,22 @@ func SQLSetConnectAttr(connectionHandle SQLHDBC, attribute SQLINTEGER, valuePtr 
 	return SQLRETURN(r)
 }
 
+func SQLSetPos(statementHandle SQLHSTMT, rowNumber SQLSETPOSIROW, operation SQLUSMALLINT, lockType SQLUSMALLINT) (ret SQLRETURN) {
+	r := C.SQLSetPos(C.SQLHSTMT(statementHandle), C.SQLSETPOSIROW(rowNumber), C.SQLUSMALLINT(operation), C.SQLUSMALLINT(lockType))
+	return SQLRETURN(r)
+}
+
+func SQLSetStmtAttr(statementHandle SQLHSTMT, attribute SQLINTEGER, valuePtr SQLPOINTER, stringLength SQLINTEGER) (ret SQLRETURN) {
+	r := C.SQLSetStmtAttr(C.SQLHSTMT(statementHandle), C.SQLINTEGER(attribute), C.SQLPOINTER(valuePtr), C.SQLINTEGER(stringLength))
+	return SQLRETURN(r)
+}
+
+func SQLColAttribute(statementHandle SQLHSTMT, columnNumber SQLUSMALLINT, fieldIdentifier SQLUSMALLINT, characterAttributePtr SQLPOINTER, bufferLength SQLSMALLINT, stringLengthPtr *SQLSMALLINT, numericAttributePtr *SQLLEN) (ret SQLRETURN) {
+	r := C.SQLColAttribute(C.SQLHSTMT(statementHandle), C.SQLUSMALLINT(columnNumber), C.SQLUSMALLINT(fieldIdentifier), C.SQLPOINTER(characterAttributePtr), C.SQLSMALLINT(bufferLength), (*C.SQLSMALLINT)(stringLengthPtr), (*C.SQLLEN)(numericAttributePtr))
+	return SQLRETURN(r)
+}
+
+func SQLFetchScroll(statementHandle SQLHSTMT, FetchOrientation SQLUSMALLINT, FetchOffset SQLLEN) (ret SQLRETURN) {
+	r := C.SQLFetchScroll(C.SQLHSTMT(statementHandle), C.SQLUSMALLINT(FetchOrientation), C.SQLLEN(FetchOffset))
+	return SQLRETURN(r)
+}

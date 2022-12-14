@@ -4,7 +4,7 @@
 
 package api
 
-//go:generate go run $GOROOT/src/syscall/mksyscall_windows.go -output zapi_windows.go api.go
+//xxgo:generate go run $GOROOT/src/syscall/mksyscall_windows.go -output zapi_windows.go api.go
 
 //go:generate sh -c "./mksyscall_unix.pl api.go | gofmt > zapi_unix.go"
 
@@ -64,6 +64,10 @@ type (
 //sys	SQLRowCount(statementHandle SQLHSTMT, rowCountPtr *SQLLEN) (ret SQLRETURN) = odbc32.SQLRowCount
 //sys	SQLSetEnvAttr(environmentHandle SQLHENV, attribute SQLINTEGER, valuePtr SQLPOINTER, stringLength SQLINTEGER) (ret SQLRETURN) = odbc32.SQLSetEnvAttr
 //sys	SQLSetConnectAttr(connectionHandle SQLHDBC, attribute SQLINTEGER, valuePtr SQLPOINTER, stringLength SQLINTEGER) (ret SQLRETURN) = odbc32.SQLSetConnectAttrW
+//sys   SQLSetPos(statementHandle SQLHSTMT,rowNumber SQLSETPOSIROW,operation SQLUSMALLINT,lockType SQLUSMALLINT)(ret SQLRETURN) = odbc32.SQLSetPos
+//sys   SQLSetStmtAttr(statementHandle SQLHSTMT,attribute SQLINTEGER,valuePtr SQLPOINTER,stringLength SQLINTEGER)(ret SQLRETURN) = odbc32.SQLSetStmtAttr
+//sys   SQLColAttribute(statementHandle SQLHSTMT, columnNumber  SQLUSMALLINT, fieldIdentifier SQLUSMALLINT, characterAttributePtr SQLPOINTER, bufferLength SQLSMALLINT, stringLengthPtr *SQLSMALLINT, numericAttributePtr *SQLLEN) (ret SQLRETURN)  = odbc32.SQLColAttribute
+//sys	SQLFetchScroll(statementHandle SQLHSTMT, FetchOrientation  SQLUSMALLINT,FetchOffset SQLLEN) (ret SQLRETURN) = odbc32.SQLFetchScroll
 
 // UTF16ToString returns the UTF-8 encoding of the UTF-16 sequence s,
 // with a terminating NUL removed.
@@ -84,3 +88,9 @@ func StringToUTF16(s string) []uint16 { return utf16.Encode([]rune(s + "\x00")) 
 // StringToUTF16Ptr returns pointer to the UTF-16 encoding of
 // the UTF-8 string s, with a terminating NUL added.
 func StringToUTF16Ptr(s string) *uint16 { return &StringToUTF16(s)[0] }
+
+// https://www.ibm.com/docs/en/db2-for-zos/11?topic=scido-steps-retrieving-data-scrollable-cursors-in-db2-odbc-application
+// https://www.ibm.com/docs/en/db2-for-zos/11?topic=odbc-scrollable-cursor-example
+
+// https://www.ibm.com/docs/en/db2-for-zos/12?topic=functions-sqlsetstmtattr-set-statement-attributes
+// https://www.ibm.com/docs/en/db2-for-zos/12?topic=functions-sqlsetpos-set-cursor-position-in-rowset

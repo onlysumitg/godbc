@@ -167,6 +167,15 @@ func (r *Rows) Next(dest []driver.Value) error {
 	return nil
 }
 
+func (r *Rows) MoveTo(rowNumber int) error {
+	buf := api.SQLLEN(rowNumber)
+	ret := api.SQLFetchScroll(r.os.h, api.SQL_FETCH_ABSOLUTE, buf)
+	if IsError(ret) {
+		return NewError("SQLFetchScroll", r.os.h)
+	}
+	return nil
+}
+
 func (r *Rows) Close() error {
 	return r.os.closeByRows()
 }

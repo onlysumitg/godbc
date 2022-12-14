@@ -46,6 +46,11 @@ func (d *Driver) Open(dsn string) (driver.Conn, error) {
 	return &Conn{h: h, isMSAccessDriver: isAccess}, nil
 }
 
+// https://pkg.go.dev/database/sql/driver#Pinger
+// func (c *Conn) Ping(ctx context.Context) (err error) {
+// 	sql := "values(1)"
+// }
+
 func (c *Conn) Close() (err error) {
 	if c.tx != nil {
 		c.tx.Rollback()
