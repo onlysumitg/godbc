@@ -86,7 +86,8 @@ func setRowsetSize(h api.SQLHSTMT, size int) error {
 
 func setScrollableCursor(h api.SQLHSTMT) error {
 	cSize := api.SQL_SCROLLABLE
-	ret := api.SQLSetStmtAttr(h, api.SQL_ATTR_CURSOR_SCROLLABLE, api.SQLPOINTER(unsafe.Pointer(&cSize)), 0)
+	fmt.Printf("SQL_ATTR_CURSOR_SCROLLABLE cSize: %T\n", cSize)
+	ret := api.SQLSetStmtAttr(h, api.SQL_ATTR_CURSOR_SCROLLABLE, api.SQLPOINTER(unsafe.Pointer(&cSize)), api.SQL_IS_INTEGER)
 	if IsError(ret) {
 		return NewError("SQL_ATTR_CURSOR_SCROLLABLE", h)
 	}
@@ -95,7 +96,9 @@ func setScrollableCursor(h api.SQLHSTMT) error {
 
 func setCursorType(h api.SQLHSTMT) error {
 	cSize := api.SQL_CURSOR_STATIC
-	ret := api.SQLSetStmtAttr(h, api.SQL_ATTR_CURSOR_TYPE, api.SQLPOINTER(unsafe.Pointer(&cSize)), 0)
+	fmt.Printf("SQL_ATTR_CURSOR_SCROLLABLE cSize: %T\n", cSize)
+
+	ret := api.SQLSetStmtAttr(h, api.SQL_ATTR_CURSOR_TYPE, api.SQLPOINTER(unsafe.Pointer(&cSize)), api.SQL_IS_INTEGER)
 	if IsError(ret) {
 		return NewError("SQL_ATTR_CURSOR_TYPE", h)
 	}
