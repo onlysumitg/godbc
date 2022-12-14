@@ -5,12 +5,13 @@
 package odbc
 
 import (
-	"database/sql"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/zerobit-tech/godbc/database/sql"
 
 	ole "github.com/go-ole/go-ole"
 	"github.com/go-ole/go-ole/oleutil"

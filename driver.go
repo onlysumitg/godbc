@@ -6,7 +6,7 @@
 package odbc
 
 import (
-	"database/sql"
+	"github.com/zerobit-tech/godbc/database/sql"
 
 	"github.com/zerobit-tech/godbc/api"
 )

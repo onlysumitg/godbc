@@ -5,9 +5,10 @@
 package odbc
 
 import (
-	"database/sql/driver"
 	"strings"
 	"unsafe"
+
+	"github.com/zerobit-tech/godbc/database/sql/driver"
 
 	"github.com/zerobit-tech/godbc/api"
 )

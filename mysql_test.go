@@ -5,11 +5,12 @@
 package odbc
 
 import (
-	"database/sql"
 	"flag"
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/zerobit-tech/godbc/database/sql"
 )
 
 var (

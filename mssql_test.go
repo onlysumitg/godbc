@@ -6,8 +6,6 @@ package odbc
 
 import (
 	"bytes"
-	"database/sql"
-	"database/sql/driver"
 	"errors"
 	"flag"
 	"fmt"
@@ -20,6 +18,9 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/zerobit-tech/godbc/database/sql"
+	"github.com/zerobit-tech/godbc/database/sql/driver"
 
 	"github.com/zerobit-tech/godbc/api"
 )

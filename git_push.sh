@@ -1,10 +1,10 @@
 go build
 
 git add .
-git commit -m "Fix"
+git commit -m "Include go original database sql"
 
-git tag -a v0.0.11 $(git log --format="%H" -n 1) -m "Scrollable cursor"
+git tag -a v0.0.12 $(git log --format="%H" -n 1) -m "database sql"
 
 git push
 
-git push origin v0.0.11
+git push origin v0.0.12

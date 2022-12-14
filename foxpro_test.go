@@ -5,11 +5,12 @@
 package odbc_test
 
 import (
-	"database/sql"
 	"flag"
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/zerobit-tech/godbc/database/sql"
 
 	_ "github.com/zerobit-tech/godbc"
 )

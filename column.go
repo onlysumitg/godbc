@@ -5,13 +5,14 @@
 package odbc
 
 import (
-	"database/sql/driver"
 	"errors"
 	"fmt"
 	"reflect"
 	"strings"
 	"time"
 	"unsafe"
+
+	"github.com/zerobit-tech/godbc/database/sql/driver"
 
 	"github.com/zerobit-tech/godbc/api"
 )
