@@ -109,7 +109,7 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 	}
 	// sumit -> column name with label
 	if columnLable != "" && columnLable != originalName {
-		nameToUse = nameToUse + " [" + columnLable + "]"
+		nameToUse = nameToUse + "[" + columnLable + "]"
 	}
 	b := &BaseColumn{
 		name:    nameToUse,
