@@ -107,9 +107,9 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 	if columnTable != "" {
 		nameToUse = columnTable + "." + originalName
 	}
-
+	// sumit -> column name with label
 	if columnLable != "" && columnLable != originalName {
-		nameToUse = nameToUse + "[" + columnLable + "]"
+		nameToUse = nameToUse + " [" + columnLable + "]"
 	}
 	b := &BaseColumn{
 		name:    nameToUse,
@@ -152,7 +152,7 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 	case api.SQL_LONGVARBINARY:
 		return NewVariableWidthColumn(b, api.SQL_C_BINARY, 0)
 	default:
-		return NewVariableWidthColumn(b, api.SQL_C_WCHAR, 0)
+		return NewVariableWidthColumn(b, api.SQL_C_WCHAR, size)
 
 		//return nil, fmt.Errorf("%s : unsupported column type %d", nameToUse, sqltype)
 	}
