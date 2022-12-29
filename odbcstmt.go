@@ -190,7 +190,7 @@ func (s *ODBCStmt) BindColumns() error {
 			fmt.Println("column errr>>>>>", err.Error())
 			return err
 		}
-		fmt.Println("column >>>>>", c, err.Error())
+		fmt.Println("column >>>>>", c)
 		s.Cols[i] = c
 		// Once we found one non-bindable column, we will not bind the rest.
 		// http://www.easysoft.com/developer/languages/c/odbc-tutorial-fetching-results.html
