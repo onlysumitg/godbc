@@ -186,6 +186,7 @@ func (s *ODBCStmt) BindColumns() error {
 	binding := true
 	for i := range s.Cols {
 		c, err := NewColumn(s.h, i)
+		fmt.Println("column >>>>>", c, err.Error())
 		if err != nil {
 			return err
 		}

@@ -160,6 +160,9 @@ func (r *Rows) Next(dest []driver.Value) error {
 	}
 	for i := range dest {
 		v, err := r.os.Cols[i].Value(r.os.h, i)
+
+		fmt.Println("dest[i] = v value >>>", dest[i], v, ":::", err.Error())
+
 		if err != nil {
 			return err
 		}
