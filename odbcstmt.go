@@ -186,10 +186,11 @@ func (s *ODBCStmt) BindColumns() error {
 	binding := true
 	for i := range s.Cols {
 		c, err := NewColumn(s.h, i)
-		fmt.Println("column >>>>>", c, err.Error())
 		if err != nil {
+			fmt.Println("column errr>>>>>", err.Error())
 			return err
 		}
+		fmt.Println("column >>>>>", c, err.Error())
 		s.Cols[i] = c
 		// Once we found one non-bindable column, we will not bind the rest.
 		// http://www.easysoft.com/developer/languages/c/odbc-tutorial-fetching-results.html
