@@ -3,8 +3,8 @@ go build
 git add .
 git commit -m "Column label"
 
-git tag -a v0.0.30 $(git log --format="%H" -n 1) -m "Column type"
+git tag -a v0.0.31 $(git log --format="%H" -n 1) -m "Column type"
 
 git push
 
-git push origin v0.0.30
+git push origin v0.0.31

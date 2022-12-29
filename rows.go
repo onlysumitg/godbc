@@ -162,11 +162,11 @@ func (r *Rows) Next(dest []driver.Value) error {
 		v, err := r.os.Cols[i].Value(r.os.h, i)
 
 		if err != nil {
-			fmt.Println("dest[i] = v value err>>>", err.Error())
-
-			return err
+			fmt.Println("dest[i] = v value err>>>", dest[i], err.Error())
+			v = fmt.Sprintf("**ERROR** : %s", err.Error())
+			//return err
 		}
-		fmt.Println("dest[i] = v value >>>", dest[i], v)
+
 		dest[i] = v
 	}
 	return nil
