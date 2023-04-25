@@ -11,7 +11,10 @@
 
 package api
 
-import "unsafe"
+import (
+	 
+	"unsafe"
+)
 
 // #cgo darwin LDFLAGS: -lodbc
 // #cgo linux LDFLAGS: -lodbc
@@ -26,10 +29,36 @@ func SQLAllocHandle(handleType SQLSMALLINT, inputHandle SQLHANDLE, outputHandle 
 	return SQLRETURN(r)
 }
 
-func SQLBindCol(statementHandle SQLHSTMT, columnNumber SQLUSMALLINT, targetType SQLSMALLINT, targetValuePtr SQLPOINTER, bufferLength SQLLEN, vallen *SQLLEN) (ret SQLRETURN) {
-	r := C.SQLBindCol(C.SQLHSTMT(statementHandle), C.SQLUSMALLINT(columnNumber), C.SQLSMALLINT(targetType), C.SQLPOINTER(targetValuePtr), C.SQLLEN(bufferLength), (*C.SQLLEN)(vallen))
+func SQLBindCol(statementHandle SQLHSTMT, columnNumber SQLUSMALLINT, targetType SQLSMALLINT, targetValuePtr []byte, bufferLength SQLLEN, vallen *SQLLEN) (ret SQLRETURN) {
+	r := C.SQLBindCol(C.SQLHSTMT(statementHandle), C.SQLUSMALLINT(columnNumber), C.SQLSMALLINT(targetType), C.SQLPOINTER(&targetValuePtr[0]), C.SQLLEN(bufferLength), (*C.SQLLEN)(vallen))
 	return SQLRETURN(r)
 }
+
+func SQLBindCol223(statementHandle SQLHSTMT, columnNumber SQLUSMALLINT, targetType SQLSMALLINT, 
+	buf []byte, 
+	bufferLength SQLLEN, 
+	vallen *SQLLEN) (ret SQLRETURN) {
+	 
+	// var a C.SQLLEN
+	// C.SQLPOINTER(unsafe.Pointer(&a)),
+
+	r := C.SQLBindCol(C.SQLHSTMT(statementHandle), 
+	C.SQLUSMALLINT(columnNumber), 
+	C.SQLSMALLINT(targetType), 
+	C.SQLPOINTER(unsafe.Pointer(&buf[0])),  // issue is here
+	C.SQLLEN(bufferLength), 
+
+
+	(*C.SQLLEN)(vallen))
+	return SQLRETURN(r)
+}
+
+
+func SQLBindCol22(statementHandle SQLHSTMT, columnNumber SQLUSMALLINT, targetType SQLSMALLINT, targetValuePtr SQLPOINTER, bufferLength SQLLEN, vallen SQLLEN) (ret SQLRETURN) {
+	r := C.SQLBindCol(C.SQLHSTMT(statementHandle), C.SQLUSMALLINT(columnNumber), C.SQLSMALLINT(targetType), C.SQLPOINTER(targetValuePtr), C.SQLLEN(bufferLength), (*C.SQLLEN)(&vallen))
+	return SQLRETURN(r)
+}
+ 
 
 func SQLBindParameter(statementHandle SQLHSTMT, parameterNumber SQLUSMALLINT, inputOutputType SQLSMALLINT, valueType SQLSMALLINT, parameterType SQLSMALLINT, columnSize SQLULEN, decimalDigits SQLSMALLINT, parameterValue SQLPOINTER, bufferLength SQLLEN, ind *SQLLEN) (ret SQLRETURN) {
 	r := C.SQLBindParameter(C.SQLHSTMT(statementHandle), C.SQLUSMALLINT(parameterNumber), C.SQLSMALLINT(inputOutputType), C.SQLSMALLINT(valueType), C.SQLSMALLINT(parameterType), C.SQLULEN(columnSize), C.SQLSMALLINT(decimalDigits), C.SQLPOINTER(parameterValue), C.SQLLEN(bufferLength), (*C.SQLLEN)(ind))
@@ -96,11 +125,6 @@ func SQLNumParams(statementHandle SQLHSTMT, parameterCountPtr *SQLSMALLINT) (ret
 	return SQLRETURN(r)
 }
 
-func SQLMoreResults(statementHandle SQLHSTMT) (ret SQLRETURN) {
-	r := C.SQLMoreResults(C.SQLHSTMT(statementHandle))
-	return SQLRETURN(r)
-}
-
 func SQLNumResultCols(statementHandle SQLHSTMT, columnCountPtr *SQLSMALLINT) (ret SQLRETURN) {
 	r := C.SQLNumResultCols(C.SQLHSTMT(statementHandle), (*C.SQLSMALLINT)(columnCountPtr))
 	return SQLRETURN(r)
@@ -126,22 +150,33 @@ func SQLSetConnectAttr(connectionHandle SQLHDBC, attribute SQLINTEGER, valuePtr 
 	return SQLRETURN(r)
 }
 
-func SQLSetPos(statementHandle SQLHSTMT, rowNumber SQLSETPOSIROW, operation SQLUSMALLINT, lockType SQLUSMALLINT) (ret SQLRETURN) {
-	r := C.SQLSetPos(C.SQLHSTMT(statementHandle), C.SQLSETPOSIROW(rowNumber), C.SQLUSMALLINT(operation), C.SQLUSMALLINT(lockType))
+func SQLExecDirect(statementHandle SQLHSTMT, statementText *SQLWCHAR, textLength SQLINTEGER) (ret SQLRETURN) {
+	r := C.SQLExecDirectW(C.SQLHSTMT(statementHandle), (*C.SQLWCHAR)(unsafe.Pointer(statementText)), C.SQLINTEGER(textLength))
+	return SQLRETURN(r)
+}
+
+
+// func SQLDropDb(connectionHandle SQLHDBC, dbnamePtr *SQLWCHAR, dbnameLen SQLINTEGER) (ret SQLRETURN) {
+// 	r := C.SQLDropDbW(C.SQLHDBC(connectionHandle), (*C.SQLWCHAR)(unsafe.Pointer(dbnamePtr)), C.SQLINTEGER(dbnameLen))
+// 	return SQLRETURN(r)
+// }
+
+// func SQLCreateDb(connectionHandle SQLHDBC, dbnamePtr *SQLWCHAR, dbnameLen SQLINTEGER, codeSetPtr *SQLWCHAR, codeSetLen SQLINTEGER, modePtr *SQLWCHAR, modeLen SQLINTEGER) (ret SQLRETURN) {
+// 	r := C.SQLCreateDbW(C.SQLHDBC(connectionHandle), (*C.SQLWCHAR)(unsafe.Pointer(dbnamePtr)), C.SQLINTEGER(dbnameLen), (*C.SQLWCHAR)(unsafe.Pointer(codeSetPtr)), C.SQLINTEGER(codeSetLen), (*C.SQLWCHAR)(unsafe.Pointer(modePtr)), C.SQLINTEGER(modeLen))
+// 	return SQLRETURN(r)
+// }
+
+func SQLColAttribute(statementHandle SQLHSTMT, ColumnNumber SQLUSMALLINT, FieldIdentifier SQLUSMALLINT, CharacterAttributePtr SQLPOINTER, BufferLength SQLSMALLINT, StringLengthPtr *SQLSMALLINT, NumericAttributePtr  *SQLLEN) (ret SQLRETURN) {
+	r := C.SQLColAttribute(C.SQLHSTMT(statementHandle), C.SQLUSMALLINT(ColumnNumber), C.SQLUSMALLINT(FieldIdentifier), C.SQLPOINTER(CharacterAttributePtr), C.SQLSMALLINT(BufferLength), (*C.SQLSMALLINT)(unsafe.Pointer(StringLengthPtr)), (*C.SQLLEN)(NumericAttributePtr))
+	return SQLRETURN(r)
+}
+
+func SQLMoreResults(statementHandle SQLHSTMT) (ret SQLRETURN) {
+	r := C.SQLMoreResults(C.SQLHSTMT(statementHandle))
 	return SQLRETURN(r)
 }
 
 func SQLSetStmtAttr(statementHandle SQLHSTMT, attribute SQLINTEGER, valuePtr SQLPOINTER, stringLength SQLINTEGER) (ret SQLRETURN) {
-	r := C.SQLSetStmtAttr(C.SQLHSTMT(statementHandle), C.SQLINTEGER(attribute), C.SQLPOINTER(valuePtr), C.SQLINTEGER(stringLength))
-	return SQLRETURN(r)
-}
-
-func SQLColAttribute(statementHandle SQLHSTMT, columnNumber SQLUSMALLINT, fieldIdentifier SQLUSMALLINT, characterAttributePtr SQLPOINTER, bufferLength SQLSMALLINT, stringLengthPtr *SQLSMALLINT, numericAttributePtr *SQLLEN) (ret SQLRETURN) {
-	r := C.SQLColAttribute(C.SQLHSTMT(statementHandle), C.SQLUSMALLINT(columnNumber), C.SQLUSMALLINT(fieldIdentifier), C.SQLPOINTER(characterAttributePtr), C.SQLSMALLINT(bufferLength), (*C.SQLSMALLINT)(stringLengthPtr), (*C.SQLLEN)(numericAttributePtr))
-	return SQLRETURN(r)
-}
-
-func SQLFetchScroll(statementHandle SQLHSTMT, FetchOrientation SQLSMALLINT, FetchOffset SQLLEN) (ret SQLRETURN) {
-	r := C.SQLFetchScroll(C.SQLHSTMT(statementHandle), C.SQLSMALLINT(FetchOrientation), C.SQLLEN(FetchOffset))
+	r := C.SQLSetStmtAttrW(C.SQLHSTMT(statementHandle), C.SQLINTEGER(attribute), C.SQLPOINTER(valuePtr), C.SQLINTEGER(stringLength))
 	return SQLRETURN(r)
 }

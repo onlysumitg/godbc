@@ -10,7 +10,7 @@ import (
 	"github.com/zerobit-tech/godbc/api"
 )
 
-func ToHandleAndType(handle interface{}) (h api.SQLHANDLE, ht api.SQLSMALLINT, err error) {
+func ToHandleAndType(handle interface{}) (h api.SQLHANDLE, ht api.SQLSMALLINT) {
 	switch v := handle.(type) {
 	case api.SQLHENV:
 		if v == api.SQLHENV(api.SQL_NULL_HANDLE) {
@@ -26,16 +26,13 @@ func ToHandleAndType(handle interface{}) (h api.SQLHANDLE, ht api.SQLSMALLINT, e
 		ht = api.SQL_HANDLE_STMT
 		h = api.SQLHANDLE(v)
 	default:
-		err = fmt.Errorf("unexpected handle type %T", v)
+		panic(fmt.Errorf("unexpected handle type %T", v))
 	}
-	return h, ht, err
+	return h, ht
 }
 
 func releaseHandle(handle interface{}) error {
-	h, ht, err := ToHandleAndType(handle)
-	if err != nil {
-		return err
-	}
+	h, ht := ToHandleAndType(handle)
 	ret := api.SQLFreeHandle(ht, h)
 	if ret == api.SQL_INVALID_HANDLE {
 		return fmt.Errorf("SQLFreeHandle(%d, %d) returns SQL_INVALID_HANDLE", ht, h)
@@ -43,5 +40,6 @@ func releaseHandle(handle interface{}) error {
 	if IsError(ret) {
 		return NewError("SQLFreeHandle", handle)
 	}
-	return drv.Stats.updateHandleCount(ht, -1)
+	drv.Stats.updateHandleCount(ht, -1)
+	return nil
 }
