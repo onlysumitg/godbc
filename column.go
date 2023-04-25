@@ -5,10 +5,12 @@
 package godbc
 
 import (
+	"context"
 	"database/sql/driver"
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 	"unsafe"
 
@@ -55,9 +57,36 @@ func describeColumn(h api.SQLHSTMT, idx int, namebuf []uint16) (namelen int, sql
 	return int(l), sqltype, size, ret
 }
 
+func columnLable(h api.SQLHSTMT, idx int) string {
+	var namelen api.SQLSMALLINT
+	namebuf := make([]byte, api.MAX_FIELD_SIZE)
+	buf := api.SQLLEN(32)
+	ret := api.SQLColAttribute(h, api.SQLUSMALLINT(idx+1), api.SQL_DESC_LABEL, api.SQLPOINTER(unsafe.Pointer(&namebuf[0])), (api.MAX_FIELD_SIZE), (*api.SQLSMALLINT)(&namelen), &buf)
+
+	if IsError(ret) {
+		fmt.Println(ret)
+		return ""
+	}
+	dbtype := string(namebuf[:namelen])
+	return dbtype
+}
+func columnTable(h api.SQLHSTMT, idx int) string {
+	var namelen api.SQLSMALLINT
+	namebuf := make([]byte, api.MAX_FIELD_SIZE)
+	buf := api.SQLLEN(32)
+	ret := api.SQLColAttribute(h, api.SQLUSMALLINT(idx+1), api.SQL_DESC_BASE_TABLE_NAME, api.SQLPOINTER(unsafe.Pointer(&namebuf[0])), (api.MAX_FIELD_SIZE), (*api.SQLSMALLINT)(&namelen), &buf)
+
+	if IsError(ret) {
+		fmt.Println(ret)
+		return ""
+	}
+	dbtype := string(namebuf[:namelen])
+	return dbtype
+}
+
 // TODO(brainman): did not check for MS SQL timestamp
 
-func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
+func NewColumn(ctx context.Context, h api.SQLHSTMT, idx int) (Column, error) {
 	namebuf := make([]uint16, 150)
 	namelen, sqltype, size, ret := describeColumn(h, idx, namebuf)
 	if ret == api.SQL_SUCCESS_WITH_INFO && namelen > len(namebuf) {
@@ -72,8 +101,31 @@ func NewColumn(h api.SQLHSTMT, idx int) (Column, error) {
 		// still complaining about buffer size
 		return nil, errors.New("Failed to allocate column name buffer")
 	}
+
+	//nameToUse := api.UTF16ToString(namebuf[:namelen])
+	originalName := strings.Trim(api.UTF16ToString(namebuf[:namelen]), " ")
+	nameToUse := originalName
+
+	useLabelInColName, ok := ctx.Value(LABEL_IN_COL_NAME).(bool)
+	if !ok {
+		useLabelInColName = false
+	}
+
+	if useLabelInColName {
+		columnLable := strings.Trim(columnLable(h, idx), " ")
+		columnTable := strings.Trim(columnTable(h, idx), " ")
+
+		if columnTable != "" {
+			nameToUse = columnTable + "." + originalName
+		}
+		// sumit -> column name with label
+		if columnLable != "" && columnLable != originalName {
+			nameToUse = nameToUse + "[" + columnLable + "]"
+		}
+	}
+
 	b := &BaseColumn{
-		name:  api.UTF16ToString(namebuf[:namelen]),
+		name:  nameToUse,
 		SType: sqltype,
 	}
 	switch sqltype {

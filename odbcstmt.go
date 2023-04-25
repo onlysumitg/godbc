@@ -5,6 +5,7 @@
 package godbc
 
 import (
+	"context"
 	"database/sql/driver"
 	"errors"
 	"fmt"
@@ -201,7 +202,7 @@ func (s *ODBCStmt) Exec(args []driver.Value) error {
 	return nil
 }
 
-func (s *ODBCStmt) BindColumns() error {
+func (s *ODBCStmt) BindColumns(ctx context.Context) error {
 	// count columns
 	var n api.SQLSMALLINT
 	ret := api.SQLNumResultCols(s.h, &n)
@@ -215,7 +216,7 @@ func (s *ODBCStmt) BindColumns() error {
 	s.Cols = make([]Column, n)
 	binding := true
 	for i := range s.Cols {
-		c, err := NewColumn(s.h, i)
+		c, err := NewColumn(ctx, s.h, i)
 		if err != nil {
 			return err
 		}

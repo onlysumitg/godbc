@@ -130,6 +130,10 @@ const (
 	SQL_DESC_NULLABLE           = 1008
 	SQL_NULLABLE                = 1
 	SQL_NO_NULLS                = 0
+
+	SQL_DESC_LABEL           = 23
+	SQL_DESC_BASE_TABLE_NAME = 18
+	SQL_DESC_SCHEMA_NAME     = 16
 )
 
 type (

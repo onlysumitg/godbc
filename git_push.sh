@@ -4,8 +4,8 @@ now=$(date)
 git add .
 git commit -m "$now"
 
-git tag -a v0.0.32 $(git log --format="%H" -n 1) -m "$now"
+git tag -a v0.0.33 $(git log --format="%H" -n 1) -m "$now"
 
 git push
 
-git push origin v0.0.32
+git push origin v0.0.33 

@@ -5,6 +5,7 @@
 package godbc
 
 import (
+	"context"
 	"database/sql/driver"
 	"unsafe"
 
@@ -52,6 +53,15 @@ func (c *Conn) Query(query string, args []driver.Value) (driver.Rows, error) {
 		// Not implemented for queries with parameters
 		return nil, driver.ErrSkip
 	}
+	return c.QueryContext(context.Background(), query, make([]driver.NamedValue, 0))
+}
+
+func (c *Conn) QueryContext(ctx context.Context, query string, args []driver.NamedValue) (driver.Rows, error) {
+	dargs := make([]driver.Value, len(args))
+	for n, param := range args {
+		dargs[n] = param.Value
+	}
+
 	var out api.SQLHANDLE
 	var os *ODBCStmt
 	ret := api.SQLAllocHandle(api.SQL_HANDLE_STMT, api.SQLHANDLE(c.h), &out)
@@ -76,9 +86,20 @@ func (c *Conn) Query(query string, args []driver.Value) (driver.Rows, error) {
 		h:          h,
 		Parameters: ps,
 		usedByRows: true}
-	err = os.BindColumns()
+	err = os.BindColumns(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return &Rows{os: os}, nil
 }
+
+// func namedValueToValue(named []driver.NamedValue) ([]driver.Value, error) {
+// 	dargs := make([]driver.Value, len(named))
+// 	for n, param := range named {
+// 		if len(param.Name) > 0 {
+// 			return nil, errors.New("sql: driver does not support the use of Named Parameters")
+// 		}
+// 		dargs[n] = param.Value
+// 	}
+// 	return dargs, nil
+// }

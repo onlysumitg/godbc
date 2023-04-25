@@ -5,6 +5,7 @@
 package godbc
 
 import (
+	"context"
 	"database/sql/driver"
 	"fmt"
 	"io"
@@ -129,7 +130,7 @@ func (r *Rows) HasNextResultSet() bool {
 	return true
 }
 
-func (r *Rows) NextResultSet() error {
+func (r *Rows) NextResultSet(ctx context.Context) error {
 	ret := api.SQLMoreResults(r.os.h)
 	if ret == api.SQL_NO_DATA {
 		return io.EOF
@@ -138,7 +139,7 @@ func (r *Rows) NextResultSet() error {
 		return NewError("SQLMoreResults", r.os.h)
 	}
 
-	err := r.os.BindColumns()
+	err := r.os.BindColumns(ctx)
 	if err != nil {
 		return err
 	}

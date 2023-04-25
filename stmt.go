@@ -107,7 +107,7 @@ func (s *Stmt) exec(ctx context.Context, args []driver.Value) (driver.Result, er
 			isDummyCall = false
 		}
 		//log.Printf("%v: %v\n", "SeversCall 2.4", time.Now())
-		err = s.os.BindColumns()
+		err = s.os.BindColumns(ctx)
 		if err == nil {
 			//log.Printf("%v: %v\n", "SeversCall 2.410", time.Now())
 			s.os.usedByRows = true // now both Stmt and Rows refer to it
@@ -160,7 +160,7 @@ func (s *Stmt) exec(ctx context.Context, args []driver.Value) (driver.Result, er
 				//*rr = append(*rr, row_map)
 				//rr.os = s.os
 
-				err = resultsets.NextResultSet()
+				err = resultsets.NextResultSet(ctx)
 				if err != nil {
 					break
 				}
@@ -225,7 +225,7 @@ func (s *Stmt) query1(ctx context.Context, args []driver.Value) (driver.Rows, er
 	if err != nil {
 		return nil, err
 	}
-	err = s.os.BindColumns()
+	err = s.os.BindColumns(ctx)
 	if err != nil {
 		return nil, err
 	}
