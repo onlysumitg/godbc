@@ -54,7 +54,7 @@ func init() {
 	// Recover from panic to avoid stop an application when can't get the db2 cli
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Println(fmt.Sprintf("%s\nThe odbc driver cannot be registered", err))
+			fmt.Println(fmt.Sprintf("%s\nThe godbc driver cannot be registered", err))
 		}
 	}()
 
@@ -63,6 +63,6 @@ func init() {
 		panic(err)
 	}
 	//go's to databse/sql/sql.go 43 line
-	sql.Register("odbc", &drv)
+	sql.Register("godbc", &drv)
 
 }

@@ -5,7 +5,9 @@ I merge code from following two repos
 	https://github.com/alexbrainman/odbc
 	https://github.com/ibmdb/go_ibm_db
 
+## API Documentation
 
+> For complete list of godbc APIs and examples please check [APIDocumentation.md](https://github.com/onlysumitg/GoQhttp/blob/master/API_DOCUMENTATION.md)
 
 ## Prerequisite
 
@@ -19,7 +21,112 @@ For non-windows users, GCC and tar should be present in your system.
 For Docker Linux Container(Ex: Amazon Linux2), use below commands:
 yum install go git tar libpam
 ```
- 
+
+## Note:
+Environment variable DB2HOME name is changed to IBM_DB_HOME.
+
+## How to Install in Windows
+```
+You may install godbc using either of below commands
+go get -d github.com/onlysumitg/GoQhttp
+go install github.com/onlysumitg/GoQhttp/installer@latest
+go install github.com/onlysumitg/GoQhttp/installer@v0.4.2
+
+If you already have a clidriver available in your system, add the path of the same to your Path windows environment variable
+Example: Path = C:\Program Files\IBM\IBM DATA SERVER DRIVER\bin
+
+
+If you do not have a clidriver in your system, go to installer folder where godbc is downloaded in your system, use below command: 
+(Example: C:\Users\uname\go\src\github.com\ibmdb\godbc\installer or C:\Users\uname\go\pkg\mod\github.com\ibmdb\godbc\installer 
+ where uname is the username ) and run setup.go file (go run setup.go).
+
+
+Set IBM_DB_HOME to clidriver downloaded path and
+set this path to your PATH windows environment variable
+(Example: Path=C:\Users\uname\go\src\github.com\ibmdb\clidriver)
+set IBM_DB_HOME=C:\Users\uname\go\src\github.com\ibmdb\clidriver
+set PATH=%PATH%;C:\Users\uname\go\src\github.com\ibmdb\clidriver\bin
+or 
+set PATH=%PATH%;%IBM_DB_HOME%\bin
+
+
+
+Script file to set environment variable 
+cd .../godbc/installer
+setenvwin.bat
+
+```
+
+## How to Install in Linux/Mac
+```
+You may install godbc using either of below commands
+go get -d github.com/onlysumitg/GoQhttp
+go install github.com/onlysumitg/GoQhttp/installer@latest
+go install github.com/onlysumitg/GoQhttp/installer@v0.4.2
+
+
+If you already have a clidriver available in your system, set the below environment variables with the clidriver path
+
+export IBM_DB_HOME=/home/uname/clidriver
+export CGO_CFLAGS=-I$IBM_DB_HOME/include
+export CGO_LDFLAGS=-L$IBM_DB_HOME/lib 
+Linux:
+export LD_LIBRARY_PATH=/home/uname/clidriver/lib
+or
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$IBM_DB_HOME/lib
+Mac:
+export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/Applications/clidriver/lib
+
+If you do not have a clidriver available in your system, use below command:
+go to installer folder where godbc is downloaded in your system 
+(Example: /home/uname/go/src/github.com/onlysumitg/GoQhttp/installer or /home/uname/go/pkg/mod/github.com/onlysumitg/GoQhttp/installer 
+where uname is the username) and run setup.go file (go run setup.go)
+
+Set the below environment variables with the path of the clidriver downloaded
+
+export IBM_DB_HOME=/home/uname/go/src/github.com/ibmdb/clidriver
+export CGO_CFLAGS=-I$IBM_DB_HOME/include
+export CGO_LDFLAGS=-L$IBM_DB_HOME/lib
+Linux:
+export LD_LIBRARY_PATH=/home/uname/go/src/github.com/ibmdb/clidriver/lib
+or
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$IBM_DB_HOME/lib
+Mac:
+export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/home/uname/go/src/github.com/ibmdb/clidriver/lib
+or
+export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$IBM_DB_HOME/lib
+
+
+Script file to set environment variables in Linux/Mac 
+cd .../godbc/installer
+source setenv.sh
+
+For Docker Linux Container, use below commands
+yum install -y gcc git go wget tar xz make gcc-c++
+cd /root
+curl -OL https://golang.org/dl/go1.17.X.linux-amd64.tar.gz
+tar -C /usr/local -xzf go1.17.X.linux-amd64.tar.gz
+
+rm /usr/bin/go
+rm /usr/bin/gofmt
+cp /usr/local/go/bin/go /usr/bin/
+cp /usr/local/go/bin/gofmt /usr/bin/
+
+go install github.com/onlysumitg/GoQhttp/installer@v0.4.2
+or 
+go install github.com/onlysumitg/GoQhttp/installer@latest
+
+```
+
+### <a name="Licenserequirements"></a> License requirements for connecting to databases
+
+godbc driver can connect to DB2 on Linux Unix and Windows without any additional license/s, however, connecting to databases on DB2 for z/OS or DB2 for i(AS400) Servers require either client side or server side license/s. The client side license would need to be copied under `license` folder of your `clidriver` installation directory and for activating server side license, you would need to purchase DB2 Connect Unlimited Edition for System z® and DB2 Connect Unlimited Edition for System i®.
+
+To know more about license and purchasing cost, please contact [IBM Customer Support](http://www-05.ibm.com/support/operations/zz/en/selectcountrylang.html).
+
+To know more about server based licensing viz db2connectactivate, follow below links:
+* [Activating the license certificate file for DB2 Connect Unlimited Edition](https://www.ibm.com/developerworks/community/blogs/96960515-2ea1-4391-8170-b0515d08e4da/entry/unlimited_licensing_in_non_java_drivers_using_db2connectactivate_utlility1?lang=en).
+* [Unlimited licensing using db2connectactivate utility](https://www.ibm.com/developerworks/community/blogs/96960515-2ea1-4391-8170-b0515d08e4da/entry/unlimited_licensing_in_non_java_drivers_using_db2connectactivate_utlility1?lang=en.)
 
 ## How to run sample program
 
@@ -116,10 +223,10 @@ func execquery(st *sql.Stmt) error {
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 	cols, _ := rows.Columns()
 	fmt.Printf("%s    %s   %s    %s\n", cols[0], cols[1], cols[2], cols[3])
 	fmt.Println("-------------------------------------")
-	defer rows.Close()
 	for rows.Next() {
 		var t, x, m, n string
 		err = rows.Scan(&t, &x, &m, &n)

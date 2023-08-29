@@ -7,6 +7,7 @@ package godbc
 import (
 	"context"
 	"database/sql/driver"
+	"strings"
 	"unsafe"
 
 	"github.com/zerobit-tech/godbc/api"
@@ -45,6 +46,43 @@ func (c *Conn) Close() error {
 	h := c.h
 	c.h = api.SQLHDBC(api.SQL_NULL_HDBC)
 	return releaseHandle(h)
+}
+
+func (c *Conn) Ping(ctx context.Context) error {
+
+	sqlToPing, ok := ctx.Value(SQL_TO_PING).(string)
+	if !ok || strings.TrimSpace(sqlToPing) == "" {
+
+		return nil
+
+	}
+
+	//fmt.Println("Pingging..:", sqlToPing)
+	//args := make([]driver.Value, 0)
+
+	var out api.SQLHANDLE
+	//var os *ODBCStmt
+	ret := api.SQLAllocHandle(api.SQL_HANDLE_STMT, api.SQLHANDLE(c.h), &out)
+	if IsError(ret) {
+		return NewError("SQLAllocHandle", c.h)
+	}
+	h := api.SQLHSTMT(out)
+	//drv.Stats.updateHandleCount(api.SQL_HANDLE_STMT, 1)
+	b := api.StringToUTF16(sqlToPing)
+	ret = api.SQLExecDirect(h,
+		(*api.SQLWCHAR)(unsafe.Pointer(&b[0])), api.SQL_NTS)
+	if IsError(ret) {
+		defer releaseHandle(h)
+		return NewError("SQLExecDirectW", h)
+	}
+	// _, err := ExtractParameters(h)
+	// if err != nil {
+	// 	defer releaseHandle(h)
+	// 	return err
+	// }
+
+	return nil
+
 }
 
 // Query method executes the statement with out prepare if no args provided, and a driver.ErrSkip otherwise (handled by sql.go to execute usual preparedStmt)
@@ -92,14 +130,3 @@ func (c *Conn) QueryContext(ctx context.Context, query string, args []driver.Nam
 	}
 	return &Rows{os: os}, nil
 }
-
-// func namedValueToValue(named []driver.NamedValue) ([]driver.Value, error) {
-// 	dargs := make([]driver.Value, len(named))
-// 	for n, param := range named {
-// 		if len(param.Name) > 0 {
-// 			return nil, errors.New("sql: driver does not support the use of Named Parameters")
-// 		}
-// 		dargs[n] = param.Value
-// 	}
-// 	return dargs, nil
-// }

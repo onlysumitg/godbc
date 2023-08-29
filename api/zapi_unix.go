@@ -5,8 +5,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build (darwin || linux || freebsd) && cgo
-// +build darwin linux freebsd
+// +build aix darwin linux
 // +build cgo
 
 package api
@@ -16,6 +15,7 @@ import (
 	"unsafe"
 )
 
+// #cgo aix LDFLAGS: -lodbc
 // #cgo darwin LDFLAGS: -lodbc
 // #cgo linux LDFLAGS: -lodbc
 // #cgo freebsd LDFLAGS: -L /usr/local/lib -lodbc

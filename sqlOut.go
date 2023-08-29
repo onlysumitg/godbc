@@ -215,6 +215,13 @@ func (o *Out) Value() (driver.Value, error) {
 	if len(buf) > 0 {
 		p = unsafe.Pointer(&buf[0])
 	}
+
+	// dont use this logic --> make unrncesry nulls
+	// bufX := bytes.Trim(buf, "\x00")
+	// if len(bufX) == 0{
+	// 	return nil, nil
+	// }
+
 	switch o.ctype {
 	case api.SQL_C_BIT:
 		return buf[0] != 0, nil
@@ -241,6 +248,9 @@ func (o *Out) Value() (driver.Value, error) {
 	// 	return removeNulls(s), nil
 	case api.SQL_C_TYPE_TIMESTAMP:
 		t := (*api.SQL_TIMESTAMP_STRUCT)(p)
+		if int(t.Year) == 0 || int(t.Month) == 0 || int(t.Day) == 0 {
+			return nil, nil
+		}
 		r := time.Date(int(t.Year), time.Month(t.Month), int(t.Day),
 			int(t.Hour), int(t.Minute), int(t.Second), int(t.Fraction),
 			time.Local)
@@ -249,14 +259,23 @@ func (o *Out) Value() (driver.Value, error) {
 		return rt, nil
 	case api.SQL_C_TYPE_DATE:
 		t := (*api.SQL_DATE_STRUCT)(p)
+		if int(t.Year) == 0 || int(t.Month) == 0 || int(t.Day) == 0 {
+			return nil, nil
+		}
 		r := time.Date(int(t.Year), time.Month(t.Month), int(t.Day),
 			0, 0, 0, 0, time.Local)
 		rt := r.Format(DateFormat)
 
 		return rt, nil
 	case api.SQL_C_TYPE_TIME:
+		bufX := bytes.Trim(buf, "\x00")
+		if len(bufX) == 0 {
+			return nil, nil
+		}
+
 		//sumit need to change here as well
 		t := (*api.SQL_TIME_STRUCT)(p)
+
 		r := time.Date(1, 1, 1,
 			int(t.Hour),
 			int(t.Minute),

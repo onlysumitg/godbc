@@ -66,7 +66,6 @@ func (s *Stmt) Exec(args []driver.Value) (driver.Result, error) {
 
 // ExecContext implements driver.StmtExecContext interface
 func (s *Stmt) ExecContext(ctx context.Context, args []driver.NamedValue) (driver.Result, error) {
-	fmt.Println("1.22 Current date and time is: ", time.Now().String())
 
 	dargs := make([]driver.Value, len(args))
 	for n, param := range args {
@@ -112,6 +111,7 @@ func (s *Stmt) exec(ctx context.Context, args []driver.Value) (driver.Result, er
 			//log.Printf("%v: %v\n", "SeversCall 2.410", time.Now())
 			s.os.usedByRows = true // now both Stmt and Rows refer to it
 			resultsets := &Rows{os: s.os}
+			defer resultsets.Close()
 			for {
 				sumRowCount++
 

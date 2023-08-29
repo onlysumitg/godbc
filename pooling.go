@@ -3,6 +3,8 @@ package godbc
 import (
 	"database/sql"
 	"fmt"
+	"log"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -205,7 +207,7 @@ func (d *DBP) Close() {
 			b.availablePool[d.con] = append(b.availablePool[d.con], dbpc)
 			delete(b.usedPool, d.con)
 		}
-		go d.Timeout()
+		go d.Timeout() //goroutine
 	} else {
 		d.DB.Close()
 	}
@@ -214,6 +216,13 @@ func (d *DBP) Close() {
 
 // Timeout for closing the connection in pool
 func (d *DBP) Timeout() {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("godbc Timeout", r)
+		}
+	}()
+	defer debug.SetPanicOnFault(debug.SetPanicOnFault(true))
+
 	var pos int
 	i := -1
 	select {

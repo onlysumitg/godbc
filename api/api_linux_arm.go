@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build (aix || darwin || linux || freebsd) && cgo
-// +build aix darwin linux freebsd
+//go:build (darwin || linux || freebsd) && cgo
+// +build darwin linux freebsd
 // +build cgo
 
 package api
 
-// #cgo aix LDFLAGS: -lodbc
 // #cgo darwin LDFLAGS: -L /usr/local/opt/unixodbc/lib -lodbc
 // #cgo darwin CFLAGS: -I /usr/local/opt/unixodbc/include
 // #cgo linux LDFLAGS: -lodbc
@@ -29,9 +28,6 @@ SQLRETURN sqlSetConnectUIntPtrAttr(SQLHDBC connectionHandle, SQLINTEGER attribut
 import "C"
 
 const (
-	SQL_DESC_LABEL           = C.SQL_DESC_LABEL           //18
-	SQL_DESC_BASE_TABLE_NAME = C.SQL_DESC_BASE_TABLE_NAME //23
-	//SQL_DESC_SCHEMA_NAME     = C.SQL_DESC_SCHEMA_NAME     //16
 	SQL_OV_ODBC3 = uintptr(C.SQL_OV_ODBC3)
 
 	SQL_ATTR_ODBC_VERSION = C.SQL_ATTR_ODBC_VERSION

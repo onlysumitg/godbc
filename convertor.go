@@ -23,7 +23,7 @@ func (c *Col) AssignValueByType() {
 	switch c.Type.Kind() {
 	case reflect.String:
 		if c.Value == nil {
-			c.Value = ""
+			c.Value = nil
 		} else {
 			c.Value = strings.TrimSpace(asString(c.Value))
 		}

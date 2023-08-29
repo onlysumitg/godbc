@@ -128,6 +128,8 @@ func NewColumn(ctx context.Context, h api.SQLHSTMT, idx int) (Column, error) {
 		name:  nameToUse,
 		SType: sqltype,
 	}
+
+	// sumit assign result set
 	switch sqltype {
 	case api.SQL_BIT:
 		return NewBindableColumn(b, api.SQL_C_BIT, 1), nil
@@ -135,7 +137,7 @@ func NewColumn(ctx context.Context, h api.SQLHSTMT, idx int) (Column, error) {
 		return NewBindableColumn(b, api.SQL_C_LONG, 4), nil
 	case api.SQL_BIGINT:
 		return NewBindableColumn(b, api.SQL_C_SBIGINT, 8), nil
-	case api.SQL_NUMERIC, api.SQL_FLOAT, api.SQL_REAL, api.SQL_DOUBLE:
+	case api.SQL_NUMERIC, api.SQL_FLOAT, api.SQL_REAL, api.SQL_DOUBLE, api.SQL_DECIMAL:
 		return NewBindableColumn(b, api.SQL_C_DOUBLE, 8), nil
 	case api.SQL_TYPE_TIMESTAMP:
 		var v api.SQL_TIMESTAMP_STRUCT
@@ -146,7 +148,7 @@ func NewColumn(ctx context.Context, h api.SQLHSTMT, idx int) (Column, error) {
 	case api.SQL_TYPE_TIME:
 		var v api.SQL_TIME_STRUCT
 		return NewBindableColumn(b, api.SQL_C_TYPE_TIME, int(unsafe.Sizeof(v))), nil
-	case api.SQL_CHAR, api.SQL_VARCHAR, api.SQL_DECIMAL:
+	case api.SQL_CHAR, api.SQL_VARCHAR:
 		return NewVariableWidthColumn(b, api.SQL_C_CHAR, size), nil
 	case api.SQL_WCHAR, api.SQL_WVARCHAR:
 		return NewVariableWidthColumn(b, api.SQL_C_WCHAR, size), nil
@@ -191,10 +193,10 @@ func (c *BaseColumn) TypeScan() reflect.Type {
 		return reflect.TypeOf(int64(0))
 	case api.SQL_C_DOUBLE:
 		return reflect.TypeOf(float64(0.0))
-	case api.SQL_C_CHAR, api.SQL_C_WCHAR:
-		if c.SType == api.SQL_DECFLOAT {
-			return reflect.TypeOf(float64(0.0))
-		}
+	case api.SQL_C_CHAR, api.SQL_C_WCHAR, api.SQL_VARCHAR:
+		// if c.SType == api.SQL_DECFLOAT {
+		// 	return reflect.TypeOf(float64(0.0))
+		// }
 		return reflect.TypeOf(string(""))
 	case api.SQL_C_TYPE_DATE, api.SQL_C_TYPE_TIME, api.SQL_C_TYPE_TIMESTAMP:
 		return reflect.TypeOf(time.Time{})
@@ -211,6 +213,12 @@ func (c *BaseColumn) Value(buf []byte) (driver.Value, error) {
 	if len(buf) > 0 {
 		p = unsafe.Pointer(&buf[0])
 	}
+
+	// bufX := bytes.Trim(buf, "\x00")
+	// if len(bufX) == 0 {
+	// 	return nil, nil
+	// }
+
 	switch c.CType {
 	case api.SQL_C_BIT:
 		return buf[0] != 0, nil
