@@ -1,6 +1,5 @@
 syntax:glob
 *.exe
 *.orig
-*.pyc
 
 syntax:regexp

@@ -1,10 +1,11 @@
-go build
+go build 
 
+now=$(date)
 git add .
-git commit -m "Fix"
+git commit -m "$now"
 
-git tag -a v0.0.17 $(git log --format="%H" -n 1) -m "Scrollable cursor"
+git tag -a v0.0.36 $(git log --format="%H" -n 1) -m "$now"
 
 git push
 
-git push origin v0.0.17
+git push origin v0.0.36

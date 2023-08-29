@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package odbc
+package godbc
 
 import (
+	"context"
 	"database/sql/driver"
 	"errors"
 	"fmt"
-	"log"
 	"sync"
 	"time"
 	"unsafe"
@@ -32,77 +32,27 @@ func (c *Conn) PrepareODBCStmt(query string) (*ODBCStmt, error) {
 	var out api.SQLHANDLE
 	ret := api.SQLAllocHandle(api.SQL_HANDLE_STMT, api.SQLHANDLE(c.h), &out)
 	if IsError(ret) {
-		return nil, c.newError("SQLAllocHandle", c.h)
+		return nil, NewError("SQLAllocHandle", c.h)
 	}
 	h := api.SQLHSTMT(out)
-	err := drv.Stats.updateHandleCount(api.SQL_HANDLE_STMT, 1)
-	if err != nil {
-		return nil, err
-	}
-
+	drv.Stats.updateHandleCount(api.SQL_HANDLE_STMT, 1)
 	b := api.StringToUTF16(query)
-
-	err = setScrollableCursor(h)
-	if err != nil {
-		log.Println("odbcstmt.do (c *Conn) PrepareODBCStmt setCursorType", err.Error())
-	}
-	// err = setRowsetSize(h, 25)
-	// if err != nil {
-	// 	log.Println("odbcstmt.do (c *Conn) PrepareODBCStmt setRowsetSize", err.Error())
-	// }
-	err = setCursorType(h)
-	if err != nil {
-		log.Println("odbcstmt.do (c *Conn) PrepareODBCStmt setCursorType", err.Error())
-	}
-
-	ret = api.SQLPrepare(h, (*api.SQLWCHAR)(unsafe.Pointer(&b[0])), api.SQL_NTS)
+	ret = api.SQLPrepare(h,
+		(*api.SQLWCHAR)(unsafe.Pointer(&b[0])), api.SQL_NTS)
 	if IsError(ret) {
 		defer releaseHandle(h)
-		return nil, c.newError("SQLPrepare", h)
+		return nil, NewError("SQLPrepare", h)
 	}
 	ps, err := ExtractParameters(h)
 	if err != nil {
 		defer releaseHandle(h)
 		return nil, err
 	}
-
-	odbcStatement := &ODBCStmt{
+	return &ODBCStmt{
 		h:          h,
 		Parameters: ps,
 		usedByStmt: true,
-	}
-
-	return odbcStatement, nil
-}
-
-// func setRowsetSize(h api.SQLHSTMT, size int) error {
-// 	cSize := api.SQLUINTEGER(size)
-// 	ret := api.SQLSetStmtAttr(h, api.SQL_ATTR_ROW_ARRAY_SIZE, api.SQLPOINTER(unsafe.Pointer(&cSize)), 0)
-// 	if IsError(ret) {
-// 		return NewError("SQL_ATTR_ROW_ARRAY_SIZE", h)
-// 	}
-// 	return nil
-// }
-
-func setScrollableCursor(h api.SQLHSTMT) error {
-	cSize := api.SQLINTEGER(api.SQL_SCROLLABLE)
-	fmt.Printf("SQL_ATTR_CURSOR_SCROLLABLE 17 cSize: %T    %d\n ", cSize, cSize)
-	ret := api.SQLSetStmtAttr(h, api.SQL_ATTR_CURSOR_SCROLLABLE, api.SQLPOINTER(api.SQL_SCROLLABLE), api.SQL_IS_INTEGER)
-	if IsError(ret) {
-		return NewError("SQL_ATTR_CURSOR_SCROLLABLE", h)
-	}
-	return nil
-}
-
-func setCursorType(h api.SQLHSTMT) error {
-	cSize := api.SQLINTEGER(api.SQL_CURSOR_STATIC)
-	fmt.Printf("SQL_ATTR_CURSOR_TYPE 09 cSize: %T    %d\n ", cSize, cSize)
-
-	ret := api.SQLSetStmtAttr(h, api.SQL_ATTR_CURSOR_TYPE, api.SQLPOINTER(api.SQL_CURSOR_STATIC), api.SQL_IS_INTEGER)
-	if IsError(ret) {
-		return NewError("SQL_ATTR_CURSOR_TYPE", h)
-	}
-	return nil
+	}, nil
 }
 
 func (s *ODBCStmt) closeByStmt() error {
@@ -143,7 +93,9 @@ func (s *ODBCStmt) releaseHandle() error {
 
 var testingIssue5 bool // used during tests
 
-func (s *ODBCStmt) Exec(args []driver.Value, conn *Conn) error {
+func (s *ODBCStmt) Exec(args []driver.Value) error {
+	ArrayCheck := 0
+	ArrayLength := 0
 	if len(args) != len(s.Parameters) {
 		return fmt.Errorf("wrong number of arguments %d, %d expected", len(args), len(s.Parameters))
 	}
@@ -153,13 +105,85 @@ func (s *ODBCStmt) Exec(args []driver.Value, conn *Conn) error {
 		// 2) set their (vars) values here;
 		// but rebinding parameters for every new parameter value
 		// should be efficient enough for our purpose.
-		if err := s.Parameters[i].BindValue(s.h, i, a, conn); err != nil {
-			return err
-		}
+		s.Parameters[i].BindValue(s.h, i, a)
 	}
 	if testingIssue5 {
 		time.Sleep(10 * time.Microsecond)
 	}
+
+	for _, a := range args {
+		if ArrayLength == 0 {
+			switch d := a.(type) {
+			case []int64:
+				ArrayLength = len(d)
+				ArrayCheck = 1
+			case []string:
+				ArrayLength = len(d)
+				ArrayCheck = 1
+			case []bool:
+				ArrayLength = len(d)
+				ArrayCheck = 1
+			case []float64:
+				ArrayLength = len(d)
+				ArrayCheck = 1
+			case []time.Time:
+				ArrayLength = len(d)
+				ArrayCheck = 1
+			}
+		} else {
+			switch d := a.(type) {
+			case []int64:
+				if len(d) == ArrayLength {
+					ArrayLength = len(d)
+					ArrayCheck = 1
+				} else {
+					ArrayCheck = 0
+					return fmt.Errorf("Parameter's array value length should be same")
+				}
+			case []string:
+				if len(d) == ArrayLength {
+					ArrayLength = len(d)
+					ArrayCheck = 1
+				} else {
+					ArrayCheck = 0
+					return fmt.Errorf("Parameter's array value length should be same")
+				}
+			case []bool:
+				if len(d) == ArrayLength {
+					ArrayLength = len(d)
+					ArrayCheck = 1
+				} else {
+					ArrayCheck = 0
+					return fmt.Errorf("Parameter's array value length should be same")
+				}
+			case []float64:
+				if len(d) == ArrayLength {
+					ArrayLength = len(d)
+					ArrayCheck = 1
+				} else {
+					ArrayCheck = 0
+					return fmt.Errorf("Parameter's array value length should be same")
+				}
+			case []time.Time:
+				if len(d) == ArrayLength {
+					ArrayLength = len(d)
+					ArrayCheck = 1
+				} else {
+					ArrayCheck = 0
+					return fmt.Errorf("Parameter's array value length should be same")
+				}
+			}
+		}
+	}
+
+	if ArrayCheck == 1 {
+		ret := api.SQLSetStmtAttr(s.h, api.SQL_ATTR_PARAMSET_SIZE,
+			(api.SQLPOINTER)(uintptr(ArrayLength)), api.SQL_IS_INTEGER)
+		if IsError(ret) {
+			return NewError("SQLSetStmtAttr", s.h)
+		}
+	}
+
 	ret := api.SQLExecute(s.h)
 	if ret == api.SQL_NO_DATA {
 		// success but no data to report
@@ -168,10 +192,17 @@ func (s *ODBCStmt) Exec(args []driver.Value, conn *Conn) error {
 	if IsError(ret) {
 		return NewError("SQLExecute", s.h)
 	}
+	for _, p := range s.Parameters {
+		for _, o := range p.Outs {
+			if err := o.ConvertAssign(); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
-func (s *ODBCStmt) BindColumns() error {
+func (s *ODBCStmt) BindColumns(ctx context.Context) error {
 	// count columns
 	var n api.SQLSMALLINT
 	ret := api.SQLNumResultCols(s.h, &n)
@@ -179,13 +210,13 @@ func (s *ODBCStmt) BindColumns() error {
 		return NewError("SQLNumResultCols", s.h)
 	}
 	if n < 1 {
-		return errors.New("Stmt did not create a result set")
+		return errors.New("Query executed successfully but did not create a result set")
 	}
 	// fetch column descriptions
 	s.Cols = make([]Column, n)
 	binding := true
 	for i := range s.Cols {
-		c, err := NewColumn(s.h, i)
+		c, err := NewColumn(ctx, s.h, i)
 		if err != nil {
 			return err
 		}

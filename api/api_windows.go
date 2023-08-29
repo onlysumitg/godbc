@@ -4,13 +4,8 @@
 
 package api
 
-import (
-	"syscall"
-	"unsafe"
-)
-
 const (
-	SQL_OV_ODBC3 = uintptr(3)
+	SQL_OV_ODBC3 = 3
 
 	SQL_ATTR_ODBC_VERSION = 200
 
@@ -32,7 +27,9 @@ const (
 	SQL_NULL_HDBC          = 0
 	SQL_NULL_HSTMT         = 0
 
-	SQL_PARAM_INPUT = 1
+	SQL_PARAM_INPUT        = 1
+	SQL_PARAM_INPUT_OUTPUT = 2
+	SQL_PARAM_OUTPUT       = 4
 
 	SQL_NULL_DATA    = -1
 	SQL_DATA_AT_EXEC = -2
@@ -53,6 +50,7 @@ const (
 	SQL_TYPE_DATE       = 91
 	SQL_TYPE_TIME       = 92
 	SQL_TYPE_TIMESTAMP  = 93
+	SQL_NEED_DATA       = 99
 	SQL_TIMESTAMP       = 11
 	SQL_LONGVARCHAR     = -1
 	SQL_BINARY          = -2
@@ -67,8 +65,14 @@ const (
 	SQL_GUID            = -11
 	SQL_SIGNED_OFFSET   = -20
 	SQL_UNSIGNED_OFFSET = -22
+	SQL_GRAPHIC         = -95
+	SQL_BLOB            = -98
+	SQL_CLOB            = -1
+	SQL_DBCLOB          = -1
 	SQL_SS_XML          = -152
-	SQL_SS_TIME2        = -154
+	SQL_BOOLEAN         = 16
+	SQL_DECFLOAT        = -360
+	SQL_XML             = -370
 
 	SQL_C_CHAR           = SQL_CHAR
 	SQL_C_LONG           = SQL_INTEGER
@@ -83,10 +87,15 @@ const (
 	SQL_C_BINARY         = SQL_BINARY
 	SQL_C_BIT            = SQL_BIT
 	SQL_C_WCHAR          = SQL_WCHAR
+	SQL_C_DBCHAR         = SQL_DBCLOB
 	SQL_C_DEFAULT        = 99
 	SQL_C_SBIGINT        = SQL_BIGINT + SQL_SIGNED_OFFSET
 	SQL_C_UBIGINT        = SQL_BIGINT + SQL_UNSIGNED_OFFSET
 	SQL_C_GUID           = SQL_GUID
+	SQL_C_TYPE_DATE      = SQL_TYPE_DATE
+	SQL_C_TYPE_TIME      = SQL_TYPE_TIME
+	SQL_C_DECFLOAT       = SQL_DECFLOAT
+	SQL_C_XML            = SQL_XML
 
 	SQL_COMMIT   = 0
 	SQL_ROLLBACK = 1
@@ -96,18 +105,35 @@ const (
 	SQL_AUTOCOMMIT_OFF     = 0
 	SQL_AUTOCOMMIT_ON      = 1
 	SQL_AUTOCOMMIT_DEFAULT = SQL_AUTOCOMMIT_ON
+	SQL_ATTR_PARAMSET_SIZE = 22
 
 	SQL_IS_UINTEGER = -5
+	SQL_IS_INTEGER  = -6
 
 	//Connection pooling
 	SQL_ATTR_CONNECTION_POOLING = 201
 	SQL_ATTR_CP_MATCH           = 202
 	SQL_CP_OFF                  = 0
 	SQL_CP_ONE_PER_DRIVER       = 1
-	SQL_CP_ONE_PER_HENV         = uintptr(2)
+	SQL_CP_ONE_PER_HENV         = 2
 	SQL_CP_DEFAULT              = SQL_CP_OFF
 	SQL_CP_STRICT_MATCH         = 0
-	SQL_CP_RELAXED_MATCH        = uintptr(1)
+	SQL_CP_RELAXED_MATCH        = 1
+	SQL_DESC_PRECISION          = 1005
+	SQL_DESC_SCALE              = 1006
+	SQL_DESC_LENGTH             = 1003
+	SQL_DESC_CONCISE_TYPE       = SQL_COLUMN_TYPE
+	SQL_DESC_TYPE_NAME          = SQL_COLUMN_TYPE_NAME
+	SQL_COLUMN_TYPE             = 2
+	SQL_COLUMN_TYPE_NAME        = 14
+	MAX_FIELD_SIZE              = 1024
+	SQL_DESC_NULLABLE           = 1008
+	SQL_NULLABLE                = 1
+	SQL_NO_NULLS                = 0
+
+	SQL_DESC_LABEL           = 18
+	SQL_DESC_BASE_TABLE_NAME = 23
+	SQL_DESC_SCHEMA_NAME     = 16
 )
 
 type (
@@ -123,7 +149,7 @@ type (
 	SQLUSMALLINT uint16
 	SQLINTEGER   int32
 	SQLUINTEGER  uint32
-	SQLPOINTER   unsafe.Pointer
+	SQLPOINTER   uintptr
 	SQLRETURN    SQLSMALLINT
 
 	SQLGUID struct {
@@ -133,15 +159,3 @@ type (
 		Data4 [8]byte
 	}
 )
-
-func SQLSetEnvUIntPtrAttr(environmentHandle SQLHENV, attribute SQLINTEGER, valuePtr uintptr, stringLength SQLINTEGER) (ret SQLRETURN) {
-	r0, _, _ := syscall.Syscall6(procSQLSetEnvAttr.Addr(), 4, uintptr(environmentHandle), uintptr(attribute), uintptr(valuePtr), uintptr(stringLength), 0, 0)
-	ret = SQLRETURN(r0)
-	return
-}
-
-func SQLSetConnectUIntPtrAttr(connectionHandle SQLHDBC, attribute SQLINTEGER, valuePtr uintptr, stringLength SQLINTEGER) (ret SQLRETURN) {
-	r0, _, _ := syscall.Syscall6(procSQLSetConnectAttrW.Addr(), 4, uintptr(connectionHandle), uintptr(attribute), uintptr(valuePtr), uintptr(stringLength), 0, 0)
-	ret = SQLRETURN(r0)
-	return
-}

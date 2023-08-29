@@ -4,12 +4,13 @@
 
 package api
 
-//xxgo:generate go run $GOROOT/src/syscall/mksyscall_windows.go -output zapi_windows.go api.go
+//go:generate go run $GOROOT/src/syscall/mksyscall_windows.go -output zapi_windows.go api.go
 
 //go:generate sh -c "./mksyscall_unix.pl api.go | gofmt > zapi_unix.go"
 
 import (
 	"unicode/utf16"
+	"unsafe"
 )
 
 type (
@@ -17,19 +18,6 @@ type (
 		Year  SQLSMALLINT
 		Month SQLUSMALLINT
 		Day   SQLUSMALLINT
-	}
-
-	SQL_TIME_STRUCT struct {
-		Hour   SQLUSMALLINT
-		Minute SQLUSMALLINT
-		Second SQLUSMALLINT
-	}
-
-	SQL_SS_TIME2_STRUCT struct {
-		Hour     SQLUSMALLINT
-		Minute   SQLUSMALLINT
-		Second   SQLUSMALLINT
-		Fraction SQLUINTEGER
 	}
 
 	SQL_TIMESTAMP_STRUCT struct {
@@ -40,6 +28,11 @@ type (
 		Minute   SQLUSMALLINT
 		Second   SQLUSMALLINT
 		Fraction SQLUINTEGER
+	}
+	SQL_TIME_STRUCT struct {
+		Hour   SQLUSMALLINT
+		Minute SQLUSMALLINT
+		Second SQLUSMALLINT
 	}
 )
 
@@ -58,16 +51,11 @@ type (
 //sys	SQLGetData(statementHandle SQLHSTMT, colOrParamNum SQLUSMALLINT, targetType SQLSMALLINT, targetValuePtr SQLPOINTER, bufferLength SQLLEN, vallen *SQLLEN) (ret SQLRETURN) = odbc32.SQLGetData
 //sys	SQLGetDiagRec(handleType SQLSMALLINT, handle SQLHANDLE, recNumber SQLSMALLINT, sqlState *SQLWCHAR, nativeErrorPtr *SQLINTEGER, messageText *SQLWCHAR, bufferLength SQLSMALLINT, textLengthPtr *SQLSMALLINT) (ret SQLRETURN) = odbc32.SQLGetDiagRecW
 //sys	SQLNumParams(statementHandle SQLHSTMT, parameterCountPtr *SQLSMALLINT) (ret SQLRETURN) = odbc32.SQLNumParams
-//sys	SQLMoreResults(statementHandle SQLHSTMT) (ret SQLRETURN) = odbc32.SQLMoreResults
 //sys	SQLNumResultCols(statementHandle SQLHSTMT, columnCountPtr *SQLSMALLINT)  (ret SQLRETURN) = odbc32.SQLNumResultCols
 //sys	SQLPrepare(statementHandle SQLHSTMT, statementText *SQLWCHAR, textLength SQLINTEGER) (ret SQLRETURN) = odbc32.SQLPrepareW
 //sys	SQLRowCount(statementHandle SQLHSTMT, rowCountPtr *SQLLEN) (ret SQLRETURN) = odbc32.SQLRowCount
 //sys	SQLSetEnvAttr(environmentHandle SQLHENV, attribute SQLINTEGER, valuePtr SQLPOINTER, stringLength SQLINTEGER) (ret SQLRETURN) = odbc32.SQLSetEnvAttr
 //sys	SQLSetConnectAttr(connectionHandle SQLHDBC, attribute SQLINTEGER, valuePtr SQLPOINTER, stringLength SQLINTEGER) (ret SQLRETURN) = odbc32.SQLSetConnectAttrW
-//sys   SQLSetPos(statementHandle SQLHSTMT,rowNumber SQLSETPOSIROW,operation SQLUSMALLINT,lockType SQLUSMALLINT)(ret SQLRETURN) = odbc32.SQLSetPos
-//sys   SQLSetStmtAttr(statementHandle SQLHSTMT,attribute SQLINTEGER,valuePtr SQLPOINTER,stringLength SQLINTEGER)(ret SQLRETURN) = odbc32.SQLSetStmtAttr
-//sys   SQLColAttribute(statementHandle SQLHSTMT, columnNumber  SQLUSMALLINT, fieldIdentifier SQLUSMALLINT, characterAttributePtr SQLPOINTER, bufferLength SQLSMALLINT, stringLengthPtr *SQLSMALLINT, numericAttributePtr *SQLLEN) (ret SQLRETURN)  = odbc32.SQLColAttribute
-//sys	SQLFetchScroll(statementHandle SQLHSTMT, FetchOrientation  SQLSMALLINT,FetchOffset SQLLEN) (ret SQLRETURN) = odbc32.SQLFetchScroll
 
 // UTF16ToString returns the UTF-8 encoding of the UTF-16 sequence s,
 // with a terminating NUL removed.
@@ -83,14 +71,26 @@ func UTF16ToString(s []uint16) string {
 
 // StringToUTF16 returns the UTF-16 encoding of the UTF-8 string s,
 // with a terminating NUL added.
-func StringToUTF16(s string) []uint16 { return utf16.Encode([]rune(s + "\x00")) }
+func StringToUTF16(s string) []uint16 { return utf16.Encode([]rune(s + "\u0000")) }
 
 // StringToUTF16Ptr returns pointer to the UTF-16 encoding of
 // the UTF-8 string s, with a terminating NUL added.
 func StringToUTF16Ptr(s string) *uint16 { return &StringToUTF16(s)[0] }
 
-// https://www.ibm.com/docs/en/db2-for-zos/11?topic=scido-steps-retrieving-data-scrollable-cursors-in-db2-odbc-application
-// https://www.ibm.com/docs/en/db2-for-zos/11?topic=odbc-scrollable-cursor-example
+// ExtractUTF16Str uses unsafe package to copy UTF16 string to a byte slice.
+func ExtractUTF16Str(s []uint16) []byte {
+	var out []byte
+	for i := range s {
+		b := Extract(unsafe.Pointer(&s[i]), unsafe.Sizeof(s[i]))
+		out = append(out, b...)
+	}
+	return out
+}
 
-// https://www.ibm.com/docs/en/db2-for-zos/12?topic=functions-sqlsetstmtattr-set-statement-attributes
-// https://www.ibm.com/docs/en/db2-for-zos/12?topic=functions-sqlsetpos-set-cursor-position-in-rowset
+func Extract(ptr unsafe.Pointer, size uintptr) []byte {
+	out := make([]byte, size)
+	for i := range out {
+		out[i] = *((*byte)(unsafe.Pointer(uintptr(ptr) + uintptr(i))))
+	}
+	return out
+}

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package odbc
+package godbc
 
 import (
 	"unicode/utf16"
@@ -50,6 +50,20 @@ func utf16toutf8(s []uint16) []byte {
 		n := utf8.EncodeRune(b, rr)
 		b = b[:n]
 		buf = append(buf, b...)
+	}
+	return buf
+}
+
+// This func takes []uint8 array and then removes the null
+// and then returns []uint8
+func removeNulls(s []uint8) []uint8 {
+	buf := make([]uint8, len(s))
+	ind := 0
+	for _, v := range s {
+		if v != 0 {
+			buf[ind] = v
+			ind++
+		}
 	}
 	return buf
 }

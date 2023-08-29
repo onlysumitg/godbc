@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package odbc
+package godbc
 
 import (
 	"database/sql/driver"
@@ -41,10 +41,7 @@ func (e *Error) Error() string {
 }
 
 func NewError(apiName string, handle interface{}) error {
-	h, ht, herr := ToHandleAndType(handle)
-	if herr != nil {
-		return herr
-	}
+	h, ht := ToHandleAndType(handle)
 	err := &Error{APIName: apiName}
 	var ne api.SQLINTEGER
 	state := make([]uint16, 6)
@@ -65,7 +62,9 @@ func NewError(apiName string, handle interface{}) error {
 			NativeError: int(ne),
 			Message:     api.UTF16ToString(msg),
 		}
-		if r.State == "08S01" {
+		if strings.Contains(r.Message, "CLI0106E") ||
+			strings.Contains(r.Message, "CLI0107E") ||
+			strings.Contains(r.Message, "CLI0108E") {
 			return driver.ErrBadConn
 		}
 		err.Diag = append(err.Diag, r)

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package odbc
+package godbc
 
 import (
 	"errors"
@@ -13,7 +13,7 @@ type Result struct {
 }
 
 func (r *Result) LastInsertId() (int64, error) {
-	// TODO(brainman): implement (*Result).LastInsertId
+	// TODO(brainman): implement (*Resilt).LastInsertId
 	return 0, errors.New("not implemented")
 }
 
