@@ -7,7 +7,7 @@ package godbc
 import (
 	"fmt"
 
-	"github.com/zerobit-tech/godbc/api"
+	"github.com/onlysumitg/godbc/api"
 )
 
 func ToHandleAndType(handle interface{}) (h api.SQLHANDLE, ht api.SQLSMALLINT) {

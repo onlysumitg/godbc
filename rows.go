@@ -12,7 +12,7 @@ import (
 	"reflect"
 	"unsafe"
 
-	"github.com/zerobit-tech/godbc/api"
+	"github.com/onlysumitg/godbc/api"
 )
 
 type Rows struct {

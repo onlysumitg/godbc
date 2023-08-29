@@ -1,4 +1,4 @@
-module github.com/zerobit-tech/godbc
+module github.com/onlysumitg/godbc
 
 go 1.19
 

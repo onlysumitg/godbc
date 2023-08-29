@@ -13,7 +13,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/zerobit-tech/godbc/api"
+	"github.com/onlysumitg/godbc/api"
 )
 
 // TODO(brainman): see if I could use SQLExecDirect anywhere

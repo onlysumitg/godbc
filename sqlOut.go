@@ -11,7 +11,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/zerobit-tech/godbc/api"
+	"github.com/onlysumitg/godbc/api"
 )
 
 // Out struct is used to store the value of a OUT parameter in Stored Procedure

@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/zerobit-tech/godbc/api"
+	"github.com/onlysumitg/godbc/api"
 )
 
 type Stmt struct {
