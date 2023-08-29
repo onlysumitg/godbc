@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	a "github.com/onlysumitg/GoQhttp"
+	a "github.com/onlysumitg/godbc"
 )
 
 var ctx = context.Background()

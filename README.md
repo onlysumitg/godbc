@@ -7,7 +7,7 @@ I merge code from following two repos
 
 ## API Documentation
 
-> For complete list of godbc APIs and examples please check [APIDocumentation.md](https://github.com/onlysumitg/GoQhttp/blob/master/API_DOCUMENTATION.md)
+> For complete list of godbc APIs and examples please check [APIDocumentation.md](https://github.com/onlysumitg/godbc/blob/master/API_DOCUMENTATION.md)
 
 ## Prerequisite
 
@@ -28,9 +28,9 @@ Environment variable DB2HOME name is changed to IBM_DB_HOME.
 ## How to Install in Windows
 ```
 You may install godbc using either of below commands
-go get -d github.com/onlysumitg/GoQhttp
-go install github.com/onlysumitg/GoQhttp/installer@latest
-go install github.com/onlysumitg/GoQhttp/installer@v0.4.2
+go get -d github.com/onlysumitg/godbc
+go install github.com/onlysumitg/godbc/installer@latest
+go install github.com/onlysumitg/godbc/installer@v0.4.2
 
 If you already have a clidriver available in your system, add the path of the same to your Path windows environment variable
 Example: Path = C:\Program Files\IBM\IBM DATA SERVER DRIVER\bin
@@ -60,9 +60,9 @@ setenvwin.bat
 ## How to Install in Linux/Mac
 ```
 You may install godbc using either of below commands
-go get -d github.com/onlysumitg/GoQhttp
-go install github.com/onlysumitg/GoQhttp/installer@latest
-go install github.com/onlysumitg/GoQhttp/installer@v0.4.2
+go get -d github.com/onlysumitg/godbc
+go install github.com/onlysumitg/godbc/installer@latest
+go install github.com/onlysumitg/godbc/installer@v0.4.2
 
 
 If you already have a clidriver available in your system, set the below environment variables with the clidriver path
@@ -79,7 +79,7 @@ export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/Applications/clidriver/lib
 
 If you do not have a clidriver available in your system, use below command:
 go to installer folder where godbc is downloaded in your system 
-(Example: /home/uname/go/src/github.com/onlysumitg/GoQhttp/installer or /home/uname/go/pkg/mod/github.com/onlysumitg/GoQhttp/installer 
+(Example: /home/uname/go/src/github.com/onlysumitg/godbc/installer or /home/uname/go/pkg/mod/github.com/onlysumitg/godbc/installer 
 where uname is the username) and run setup.go file (go run setup.go)
 
 Set the below environment variables with the path of the clidriver downloaded
@@ -112,9 +112,9 @@ rm /usr/bin/gofmt
 cp /usr/local/go/bin/go /usr/bin/
 cp /usr/local/go/bin/gofmt /usr/bin/
 
-go install github.com/onlysumitg/GoQhttp/installer@v0.4.2
+go install github.com/onlysumitg/godbc/installer@v0.4.2
 or 
-go install github.com/onlysumitg/GoQhttp/installer@latest
+go install github.com/onlysumitg/godbc/installer@latest
 
 ```
 
@@ -138,7 +138,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/onlysumitg/GoQhttp"
+	_ "github.com/onlysumitg/godbc"
 )
 
 func main() {
@@ -162,7 +162,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/onlysumitg/GoQhttp"
+	_ "github.com/onlysumitg/godbc"
 )
 
 func Create_Con(con string) *sql.DB {
@@ -267,7 +267,7 @@ package main
 import (
 	_ "database/sql"
 	"fmt"
-	a "github.com/onlysumitg/GoQhttp"
+	a "github.com/onlysumitg/godbc"
 )
 
 func main() {
@@ -307,7 +307,7 @@ import (
            "database/sql"
            "fmt"
            "time"
-          a "github.com/onlysumitg/GoQhttp"
+          a "github.com/onlysumitg/godbc"
        )
 
 func ExecQuery(st *sql.Stmt) error {
